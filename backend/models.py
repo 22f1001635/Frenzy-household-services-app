@@ -30,6 +30,11 @@ class User(db.Model, UserMixin):
         
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def validate_password(self,password):
+        if len(password) < 8:
+            return False, "Password must be at least 8 characters long"
+        return True, ""
 
 class PaymentMethod(db.Model):
     """Payment Method model for storing customer payment information"""

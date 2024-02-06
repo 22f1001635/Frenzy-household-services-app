@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from "vue";
+import { ref,onMounted } from "vue";
 import "@/assets/styles/main.css"
 import "@/assets/styles/statistics.css"
 
@@ -7,33 +7,73 @@ onMounted(() => {
     window.dispatchEvent(new CustomEvent('vue-component-itemwrap'));
     window.dispatchEvent(new CustomEvent('vue-component-search'));
 });
+
+const currentPassword = ref('');
+const newPassword = ref('');
+const confirmPassword = ref('');
+
+const handleChangePassword = async (event) => {
+  event.preventDefault();
+  
+  try {
+    const response = await fetch('/api/change-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Send cookies
+      body: JSON.stringify({
+        current_password: currentPassword.value,
+        new_password: newPassword.value,
+        confirm_password: confirmPassword.value
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      alert('Password changed successfully');
+      document.getElementById('change-password').style.display = 'none';
+    } else {
+      alert(data.message || 'Error changing password');
+    }
+    currentPassword.value = '';
+    newPassword.value = '';
+    confirmPassword.value = '';
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error changing password. Please try again.');
+  }
+};
 </script>
 <template>
 <body style="font-family: 'Poppins';">
   <main style="padding-top:2.75%;">
           <div id="graph4">
             <div class="outline">
-                <div id="change-password" class="mt-5 pform" style="display: none;">
-                  <p>Change Password</p>
-                    <form>
-                        <div class="mb-3 pt-4">
-                            <label for="current-password" class="form-label">Current Password</label>
-                            <input type="password" class="form-control" id="current-password" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="new-password" class="form-label">New Password</label>
-                            <input type="password" class="form-control" id="new-password" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="confirm-password" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirm-password" required>
-                        </div>
-                        <div class="d-flex gap-4">
-                        <button type="submit" class="btn btn-success" onclick="showForm('textarea')">Submit</button>
-                        <button type="submit" class="btn btn-secondary" onclick="showForm('textarea')">Cancel</button>
-                      </div>
-                    </form>
-                </div>
+              <div id="change-password" class="mt-5 pform" style="display: none;">
+                <p>Change Password</p>
+                <form @submit="handleChangePassword">
+                  <div class="mb-3 pt-4">
+                    <label for="current-password" class="form-label">Current Password</label>
+                    <input type="password" class="form-control" id="current-password" required v-model="currentPassword">
+                  </div>
+                  <div class="mb-3">
+                    <label for="new-password" class="form-label">New Password</label>
+                    <input type="password" class="form-control" id="new-password" required 
+                          minlength="8" 
+                          title="Password must be at least 8 characters long" v-model="newPassword">
+                  </div>
+                  <div class="mb-3">
+                    <label for="confirm-password" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirm-password" required v-model="confirmPassword">
+                  </div>
+                  <div class="d-flex gap-4">
+                    <button type="submit" class="btn btn-success">Submit</button>
+                    <button type="button" class="btn btn-secondary"  @click="$router.go(-1)">Cancel</button>
+                  </div>
+                </form>
+              </div>
                 <div id="user-prof" class="mt-4 pform" style="display: none;">
                     <p>Service Professional Registration</p>
                     <form>

@@ -53,32 +53,108 @@ def signin():
     
 @app.route('/api/signup', methods=['POST'])
 def register():
-    #get credentials 
+    # get credentials 
     data = request.json
-    username=data.get('username')
+    username = data.get('username')
     email = data.get('email')
     password = data.get('password')
-    confirm_password=data.get('confirm_password')
+    confirm_password = data.get('confirm_password')
 
+    # Check if all required fields are provided
     if not email or not password or not username or not confirm_password:
         return jsonify({
             'message': 'Provide Complete Credentials'
         }), 400
-    else:
-        if User.query.filter_by(email=email).first():
-            return jsonify({'error': 'Email already registered'}), 400
-        elif(password==confirm_password):
-            user = User(
-                email=email,
-                username=username,
-            )
-            user.set_password(password)
-            db.session.add(user)
-            db.session.commit()
-            return jsonify({'message': 'Registration successful'}), 201
+    
+    # Check if email already exists
+    if User.query.filter_by(email=email).first():
+        return jsonify({
+            'message': 'Email already registered'
+        }), 400
+    
+    # Check if passwords match
+    if password != confirm_password:
         return jsonify({
             'message': 'Password mismatch found'
+        }), 400
+    
+    # Validate password strength
+    is_valid, error_message = User.validate_password(password) 
+    if not is_valid:
+        return jsonify({
+            'message': error_message
+        }), 400
+    
+    # Create new user
+    try:
+        user = User(
+            email=email,
+            username=username,
+        )
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({'message': 'Registration successful'}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'message': 'Error during registration',
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/change-password', methods=['POST'])
+@login_required
+def change_password():
+    data = request.json
+    current_password = data.get('current_password')
+    new_password = data.get('new_password')
+    confirm_password = data.get('confirm_password')
+    
+    # Validate input presence
+    if not all([current_password, new_password, confirm_password]):
+        return jsonify({
+            'message': 'All password fields are required'
+        }), 400
+    
+    # Verify current password
+    if not current_user.check_password(current_password):
+        return jsonify({
+            'message': 'Current password is incorrect'
         }), 401
+    
+    # Check if new passwords match
+    if new_password != confirm_password:
+        return jsonify({
+            'message': 'New passwords do not match'
+        }), 400
+        
+    if current_user.check_password(new_password):
+        return jsonify({'message': 'New password cannot be the same as the current password'}), 400
+    
+    # Validate new password requirements
+    is_valid, error_message = current_user.validate_password(new_password)
+    if not is_valid:
+        return jsonify({
+            'message': error_message
+        }), 400
+    
+    # Update password
+    try:
+        current_user.set_password(new_password)
+        db.session.commit()
+        return jsonify({
+            'message': 'Password updated successfully'
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        print("Error updating password:", str(e))  # Log the actual error
+        return jsonify({
+            'message': 'Error updating password',
+            'error': str(e)  # Ensure the error is included in the response
+        }), 500
+
+
 
 @app.route('/api/current_user', methods=['GET'])
 @login_required

@@ -68,7 +68,7 @@ const handleSubmit = async (event) => {
                     </div>
                   <div class="d-flex gap-4 py-2" style="margin-left: 5.75vw;">
                       <button type="submit" class="btn btn-success">Add</button>
-                      <button type="button" class="btn btn-warning">Cancel</button>
+                      <button type="button" class="btn btn-warning"  @click="$router.go(-1)">Cancel</button>
                   </div>
               </form>
               </div>

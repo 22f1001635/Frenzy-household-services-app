@@ -1,0 +1,44 @@
+body{
+    background-color: #121212;
+    overflow:auto;
+}
+#forms{
+    padding:0% 7%;
+    #back>a{
+        text-decoration: none;
+        color: #d1d1d1;
+    }
+    #back>a:hover{
+        text-decoration: none;
+        color: black;
+    }
+    #back>a>i{
+        padding-top: 3.5%;
+        padding-left: 3%;
+        position: absolute;
+    }
+    #box{
+    padding: 4.75%;
+    padding-left: 10%;
+    border-radius: 2em;
+    display: flex;
+    img{
+        width: 40%;
+        }
+    }     
+}
+.mainform{
+    padding: 1%;
+    padding-left: 22.5%;
+}
+.text-dark-muted>a{
+    text-decoration: none;
+    color: dodgerblue;
+    opacity: 100 !important;
+}
+.text-dark-muted>a:hover{
+    color:dodgerblue;
+    font-weight: 600;
+    opacity: 100 !important;
+}
+

@@ -1,0 +1,203 @@
+.dropdown:hover .dropdown-menu{
+    display: block;
+}
+#images{
+    position: absolute;
+    width: 45%;
+    height: 75%;
+    top: 22.5%;
+    right: 5%;
+    border-radius: 1.5%;
+    img{
+        padding-top: 4%;
+        padding-left: 3%;
+    }
+}
+#shopping{
+    padding-right: 2.5%;
+    a{
+       color: #d1d1d1; 
+    }
+    a:hover{
+        color: whitesmoke;
+    }
+}
+#user{
+    a{
+        text-decoration: none;
+        color: #d1d1d1; 
+    }
+    a:hover{
+        color: whitesmoke;
+    }
+}
+.d-flex{
+    padding-right:5%;
+    padding-left: 3%;
+}
+.fa-cart-shopping{
+    padding-right: 1%;
+}
+.navbar-collapse{
+    padding-left: 3.5%;
+}
+#nav2{
+    padding-left: 7.75%;
+    padding-right: 7.75%;
+}
+#maintext{
+    width: 40%;
+    height: 21%;
+    position: absolute;
+    top: 19.5%;
+    left: 9%;
+    a{
+        text-decoration: none;
+        color: #d1d1d1; 
+    }
+    a:hover{
+        color: whitesmoke;
+    }
+}
+#products{
+    position: absolute;
+    width: 30%;
+    height: 45%;
+    top: 37.5%;
+    left: 9%;
+    border-radius: 1.5%;
+    border-style: solid;
+    border-color: coral;
+}
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+#womenspa{
+    background-color: #d1d1d1;
+    position: absolute;
+    top: 8.5%;
+    width: 26%;
+    height: 20%;
+    left: 5%;
+    border-radius: 3%;
+}
+#menmassage{
+    background-color: #d1d1d1;
+    position: absolute;
+    top: 8.5%;
+    width: 26%;
+    height: 20%;
+    left: 69%;
+    border-radius: 3%;
+}
+#acappliance{
+    background-color: #d1d1d1;
+    position: absolute;
+    top: 8.5%;
+    width: 26%;
+    left: 37%;
+    height: 20%;
+    border-radius: 3%;
+}
+#pestcontrol{
+    background-color: #d1d1d1;
+    position: absolute;
+    top: 70%;
+    width: 42.5%;
+    left: 52.5%;
+    height: 20%;
+    border-radius: 3%;
+}
+#carpenter{
+    background-color: #d1d1d1;
+    position: absolute;
+    top: 70%;
+    width: 42.5%;
+    left: 5%;
+    height: 20%;
+    border-radius: 3%;
+}
+#painting{
+    background-color: #d1d1d1;
+    position: absolute;
+    top: 39%;
+    width: 42.5%;
+    left: 5%;
+    height: 20%;
+    border-radius: 3%;
+}
+#cleaning{
+    background-color: #d1d1d1;
+    position: absolute;
+    top: 39%;
+    width: 42.5%;
+    left: 52.5%;
+    height: 20%;
+    border-radius: 3%;
+}
+#frenzyabt {
+    position: fixed;
+    width: 45%;
+    height: 75%;
+    top: 18%;
+    left: 65%;
+}
+
+#frenzyabt img {
+    max-width: 90%;
+    border-radius: 5%;
+    padding: 1%;
+}
+@media screen and (max-width: 115rem) {
+    #frenzyabt {
+        top: 22.5%;
+        left: 59%;
+    }
+}
+@media screen and (max-width: 105rem) {
+    #frenzyabt {
+        top: 17.5%;
+        left: 59%;
+    }
+    #frenzyabt img {
+        width: 70%;
+    }
+}
+@media screen and (max-width: 90rem) {
+    #frenzyabt {
+        left: 58%;
+    }
+}
+@media screen and (max-width: 80rem) {
+    #frenzyabt {
+        left: 58%;
+    }
+}
+footer{
+    background-color: #888;
+    i:hover{
+        color: white;
+    }
+}
+#form-contact{
+    position: absolute;
+    width: 30%;
+    height: 58.5%;
+    top: 17.5%;
+    left: 60%;
+    border-radius: 1.5%;
+    padding: 2%;
+    overflow-y: auto;
+}
+@media screen and (max-width: 110rem) {
+    #form-contact{
+        height: 74%;
+        top: 17%;
+    }
+}

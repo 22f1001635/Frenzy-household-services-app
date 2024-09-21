@@ -17,6 +17,12 @@ body{
         padding-left: 3%;
         position: absolute;
     }
+    #back>h2{
+        position: absolute;
+        opacity: 85%;
+        top: 17%;
+        left: 42.5%;
+    }
     #box{
     padding: 4.75%;
     padding-left: 10%;

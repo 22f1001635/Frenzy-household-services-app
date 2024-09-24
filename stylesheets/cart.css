@@ -1,0 +1,55 @@
+body{
+    background-color: #121212;
+    overflow:auto;
+}
+#forms{
+    padding:0% 7%;
+    #back>a{
+        text-decoration: none;
+        color: #d1d1d1;
+    }
+    #back>a:hover{
+        text-decoration: none;
+        color: black;
+    }
+    #back>a>i{
+        padding-top: 3.5%;
+        padding-left: 3%;
+        position: absolute;
+    }
+    #back>h2{
+        position: absolute;
+        opacity: 85%;
+        top: 17%;
+        left: 42.5%;
+    }
+    #box{
+    padding: 4.75%;
+    padding-top: 9.75%;
+    border-radius: 2em;
+    img{
+        width: 40%;
+        }
+    }     
+}
+.mainform{
+    padding: 2%;
+}
+.text-dark-muted>a{
+    text-decoration: none;
+    color: dodgerblue;
+    opacity: 100 !important;
+}
+.text-dark-muted>a:hover{
+    color:dodgerblue;
+    font-weight: 600;
+    opacity: 100 !important;
+}
+.cart{
+    background-color: aqua;
+    height: 50%;
+    width: 100%;
+    top: 20%;
+    left: 10%;
+    overflow: auto;
+}

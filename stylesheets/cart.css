@@ -4,6 +4,9 @@ body{
 }
 #forms{
     padding:0% 7%;
+    #back{
+        position: fixed;
+    }
     #back>a{
         text-decoration: none;
         color: #d1d1d1;
@@ -12,20 +15,21 @@ body{
         text-decoration: none;
         color: black;
     }
-    #back>a>i{
-        padding-top: 3.5%;
-        padding-left: 3%;
-        position: absolute;
+    #back > a > i {
+        font-size: 250%;
+        padding-left: 3vw;
+        padding-top: 3vw;
+        padding-right: 30vw;
+        vertical-align: middle;
     }
-    #back>h2{
-        position: absolute;
-        opacity: 85%;
-        top: 17%;
-        left: 42.5%;
+    #back > h2 {
+        padding-top: 3.5vw;
+        display: inline-block;
+        vertical-align: middle;
     }
     #box{
     padding: 4.75%;
-    padding-top: 9.75%;
+    padding-top: 8%;
     border-radius: 2em;
     img{
         width: 40%;
@@ -47,7 +51,7 @@ body{
 }
 .cart{
     background-color: aqua;
-    height: 50%;
+    height: 47.5vh;
     width: 100%;
     top: 20%;
     left: 10%;

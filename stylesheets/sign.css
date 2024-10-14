@@ -4,7 +4,7 @@ body{
 }
 #forms{
     padding:0% 7%;
-    #back{position: fixed;}
+    padding-bottom: 5vw;
     #back>a{
         text-decoration: none;
         color: #d1d1d1;
@@ -14,30 +14,28 @@ body{
         color: black;
     }
     #back > a > i {
-        font-size: 250%;
+        position: absolute;
+        font-size: 250vw;
         padding-left: 3vw;
         padding-top: 3vw;
-        padding-right: 30vw;
-        vertical-align: middle;
     }
     #back > h2 {
         padding-top: 3.5vw;
-        display: inline-block;
-        vertical-align: middle;
+
     }
     #box{
-    padding: 4.75%;
-    padding-left: 10%;
+    padding: 4.75vw;
+    padding-left: 10vw;
     border-radius: 2em;
     display: flex;
     img{
-        width: 40%;
+        width: 30vw;
         }
     }     
 }
 .mainform{
-    padding: 1%;
-    padding-left: 22.5%;
+    padding: 1vw;
+    padding-left: 15vw;
 }
 .text-dark-muted>a{
     text-decoration: none;

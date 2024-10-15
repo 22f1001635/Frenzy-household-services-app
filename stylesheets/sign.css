@@ -3,7 +3,7 @@ body{
     overflow:auto;
 }
 #forms{
-    padding:0% 7%;
+    padding:0vw 7vw;
     padding-bottom: 5vw;
     #back>a{
         text-decoration: none;

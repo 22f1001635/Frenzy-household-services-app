@@ -49,7 +49,6 @@ body{
     opacity: 100 !important;
 }
 .cart{
-    background-color: aqua;
     height: 47.5vh;
     overflow: auto;
 }
@@ -57,13 +56,15 @@ body{
     width:70vw;
     height:8vw;
     border-radius: 2%/12%;
-    background:green;
+    background:white;
+    border: 3px solid black;
     margin: 1.10vw;
     display: inline-flex;
+    box-shadow: 8.0px 16.0px 16.0px hsl(0deg 0% 0% / 0.25);
 }
 .cart-memeber-photo{
     width:6vw;
-    height:6vw;
+    height:5.75vw;
     border-radius: 8%/10%;
     background:blue;
     margin: 1vw;
@@ -75,13 +76,13 @@ h3{
     height: 3vw ;
     width: 3vw ;
     position: relative;
-    top: 2.5vw;
+    top: 2.35vw;
     left: 39vw;
 }
 .btn-danger{
     height: 3vw ;
     width: 3vw ;
     position: relative;
-    top: 2.5vw;
+    top: 2.35vw;
     left: 41vw;
 }

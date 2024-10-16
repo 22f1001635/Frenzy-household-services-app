@@ -1,0 +1,31 @@
+body{
+    background-color: #121212;
+    overflow: auto;
+}
+#graph1{
+    position: absolute;
+    top: 8vw;
+    left: 10vw;
+    width:40vw;
+    height:33vw;
+    border-radius: 3%;
+    background:whitesmoke;
+}
+#graph2{
+    position: absolute;
+    top: 23vw;
+    right: 10vw;
+    width:38vw;
+    height:18vw;
+    border-radius: 5%/10%;
+    background:whitesmoke;
+}
+#graph3{
+    position: absolute;
+    top: 8vw;
+    right:10vw;
+    width:38vw;
+    height:13vw;
+    border-radius: 5%/10%;
+    background:whitesmoke;
+}

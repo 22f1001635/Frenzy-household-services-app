@@ -28,8 +28,7 @@ body{
         vertical-align: middle;
     }
     #box{
-    padding: 4.75%;
-    padding-top: 8%;
+    padding: 5vw;
     border-radius: 2em;
     img{
         width: 40%;
@@ -52,8 +51,37 @@ body{
 .cart{
     background-color: aqua;
     height: 47.5vh;
-    width: 100%;
-    top: 20%;
-    left: 10%;
     overflow: auto;
+}
+.cart-member{
+    width:70vw;
+    height:8vw;
+    border-radius: 2%/12%;
+    background:green;
+    margin: 1.10vw;
+    display: inline-flex;
+}
+.cart-memeber-photo{
+    width:6vw;
+    height:6vw;
+    border-radius: 8%/10%;
+    background:blue;
+    margin: 1vw;
+}
+h3{
+    margin: 1.25vw;
+}
+.btn-warning{
+    height: 3vw ;
+    width: 3vw ;
+    position: relative;
+    top: 2.5vw;
+    left: 39vw;
+}
+.btn-danger{
+    height: 3vw ;
+    width: 3vw ;
+    position: relative;
+    top: 2.5vw;
+    left: 41vw;
 }

@@ -61,28 +61,45 @@ body{
     margin: 1.10vw;
     display: inline-flex;
     box-shadow: 8.0px 16.0px 16.0px hsl(0deg 0% 0% / 0.25);
+    .cart-memeber-photo{
+        width:6vw;
+        height:5.75vw;
+        border-radius: 8%/10%;
+        background:blue;
+        margin: 1vw;
+    }
+    h3{
+        margin: 1.25vw;
+    }
+    .btn-warning{
+        height: 3vw ;
+        width: 3vw ;
+        position: relative;
+        top: 2.35vw;
+        left: 39vw;
+    }
+    .btn-danger{
+        height: 3vw ;
+        width: 3vw ;
+        position: relative;
+        top: 2.35vw;
+        left: 41vw;
+    }
 }
-.cart-memeber-photo{
-    width:6vw;
-    height:5.75vw;
-    border-radius: 8%/10%;
-    background:blue;
-    margin: 1vw;
-}
-h3{
-    margin: 1.25vw;
-}
-.btn-warning{
-    height: 3vw ;
-    width: 3vw ;
+.order-confirm{
     position: relative;
-    top: 2.35vw;
-    left: 39vw;
-}
-.btn-danger{
-    height: 3vw ;
-    width: 3vw ;
-    position: relative;
-    top: 2.35vw;
-    left: 41vw;
+    top:2vw;
+    text-align: center;
+    right: 2vw;
+    h3{
+        margin: 3vw;
+        padding: 1vw;
+    }
+    h4,h5{
+        opacity: 0.85;
+    }
+    h6{
+        opacity: 0.5;
+        margin: 3vw;
+    }
 }

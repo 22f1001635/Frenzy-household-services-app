@@ -71,7 +71,7 @@ body{
     h3{
         margin: 1.25vw;
     }
-    .btn-warning{
+    .btn-warning,#quantity{
         height: 3vw ;
         width: 3vw ;
         position: relative;

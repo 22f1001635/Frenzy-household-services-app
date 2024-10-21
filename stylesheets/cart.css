@@ -5,7 +5,7 @@ body{
 #forms{
     padding:0% 7%;
     #back{
-        position: fixed;
+        position: relative;
     }
     #back>a{
         text-decoration: none;
@@ -16,14 +16,17 @@ body{
         color: black;
     }
     #back > a > i {
+        position: absolute;
         font-size: 250%;
         padding-left: 3vw;
         padding-top: 3vw;
         padding-right: 30vw;
         vertical-align: middle;
     }
-    #back > h2 {
-        padding-top: 3.5vw;
+    #back > p {
+        position: absolute;
+        margin-left: 36vw;
+        padding-top: 3vw;
         display: inline-block;
         vertical-align: middle;
     }
@@ -48,10 +51,10 @@ body{
     font-weight: 600;
     opacity: 100 !important;
 }
-.cart,.address,.new{
-    height: 56vh;
+.cart,.address,.cards,.new{
+    height: 58vh;
     overflow: auto;
-    position: relative
+    position: relative;
 }
 .cart-member,.saved,.new{
     width:70vw;
@@ -111,7 +114,7 @@ body{
         opacity: 0.75;
     }
 }
-.address-items{
+.address-items,.card-items{
     width: 65vw;
     margin: 3vw;
     overflow: auto;
@@ -161,4 +164,21 @@ body{
     font-size: 1vw;
     font-weight: 500;
     opacity: 0.5;
+}
+.cards{
+    margin-top: 1vw;
+}
+.method-glide{
+    height: 14vw;
+    width: 12vw;
+    padding: 1vw;
+    margin: 1.5vw;
+    margin-top: 0.4vw;
+    padding-top: 0.25vw;
+    padding-bottom: 0.25vw;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    border-radius: 2%/3%;
+    font-weight: 550;
+    font-size: 0.8vw;
+    overflow: auto;
 }

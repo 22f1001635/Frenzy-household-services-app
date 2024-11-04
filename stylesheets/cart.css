@@ -41,6 +41,10 @@ body{
 .mainform{
     padding: 2%;
 }
+#head{
+    font-size: 1.7em;
+    font-weight: 600;
+}
 .text-dark-muted>a{
     text-decoration: none;
     color: dodgerblue;
@@ -108,11 +112,13 @@ body{
 }
 .saved,.new{
     height: 9.5vw;
-    h5{
+    #meth{
         position: absolute;
         margin: 1vw;
         opacity: 0.75;
+        font-size: 1vw;
     }
+    font-size: 0.9vw;
 }
 .address-items,.card-items{
     width: 65vw;
@@ -167,9 +173,11 @@ body{
 }
 .cards{
     margin-top: 1vw;
+    padding-left: 2vw;
+    overflow: hidden;
 }
 .method-glide{
-    height: 14vw;
+    height: 14.5vw;
     width: 12vw;
     padding: 1vw;
     margin: 1.5vw;
@@ -179,6 +187,6 @@ body{
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     border-radius: 2%/3%;
     font-weight: 550;
-    font-size: 0.8vw;
+    font-size: 0.9vw;
     overflow: auto;
 }

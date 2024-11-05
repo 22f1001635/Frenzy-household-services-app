@@ -43,6 +43,7 @@ body{
 }
 #head{
     font-size: 1.7em;
+    padding-left: 0.8vw;
     font-weight: 600;
 }
 .text-dark-muted>a{
@@ -55,10 +56,13 @@ body{
     font-weight: 600;
     opacity: 100 !important;
 }
-.cart,.address,.cards,.new{
+.cart,.address,.cards,.new,.service{
     height: 58vh;
     overflow: auto;
     position: relative;
+}
+.service{
+    width: 35vw;
 }
 .cart-member,.saved,.new{
     width:70vw;

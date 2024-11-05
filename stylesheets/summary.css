@@ -29,3 +29,21 @@ body{
     border-radius: 5%/10%;
     background:whitesmoke;
 }
+#graph4{
+    position: absolute;
+    top: 8vw;
+    left: 10vw;
+    width:55vw;
+    height:33vw;
+    border-radius: 3%/6%;
+    background:whitesmoke;
+}
+#graph5{
+    position: absolute;
+    top: 8vw;
+    right:10vw;
+    width:21vw;
+    height:33vw;
+    border-radius:7.5%/5%;
+    background:whitesmoke;
+}

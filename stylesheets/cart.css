@@ -44,7 +44,7 @@ body{
 #head{
     font-size: 1.7em;
     margin-top: 0.5vw;
-    padding-left: 0.8vw;
+    padding-left: 0.9vw;
     font-weight: 600;
 }
 .text-dark-muted>a{
@@ -205,3 +205,18 @@ body{
     font-size: 0.9vw;
     overflow: auto;
 }
+.star-rating {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .stars {
+    color: #ccc;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  
+  .stars .star.active {
+    color: #ffc107;
+  }

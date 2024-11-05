@@ -43,6 +43,7 @@ body{
 }
 #head{
     font-size: 1.7em;
+    margin-top: 0.5vw;
     padding-left: 0.8vw;
     font-weight: 600;
 }
@@ -63,7 +64,17 @@ body{
 }
 .service{
     width: 35vw;
+    margin-left: 18vw;
+    form{
+        margin-top: 2vw;
+        width: 95%;
+        padding-left: 1vw;
+        label{
+            font-size: 1vw;
+        }
+    }
 }
+
 .cart-member,.saved,.new{
     width:70vw;
     height:8vw;

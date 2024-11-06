@@ -90,7 +90,7 @@ body{
         background:blue;        
         margin: 1vw;
     }
-    h3{
+    h5{
         margin: 1.25vw;
     }
     .btn-warning,#quantity{
@@ -142,7 +142,11 @@ body{
     padding-top: 0.5vw;
     margin-bottom: 1.35vw;
 }
-.address>a{
+.address-items{
+    height: 7.5vw;
+    margin: 0.5vw;
+}
+#newAddressSection>a,#savedAddressSection>a{
     position: relative;
     margin-left: 60vw;
     font-size: 0.9vw;
@@ -150,7 +154,7 @@ body{
     color:coral;
     opacity: 60%; 
 }
-.address>a:hover{
+#newAddressSection>a:hover,#savedAddressSection>a:hover{
     opacity: 100%;
     font-size: 0.91vw;
 }

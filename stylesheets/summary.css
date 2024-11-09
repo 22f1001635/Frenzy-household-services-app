@@ -37,6 +37,46 @@ body{
     height:33vw;
     border-radius: 3%/6%;
     background:whitesmoke;
+    .outline{
+        margin: 1vw;
+        height:31vw;
+        width: 53vw;
+        overflow: auto;
+        border-radius: 3%/6%;
+    }
+    #change-password,#user-prof{
+        p{
+            padding-top: 2vw;
+            color: #121212;
+            margin-left: 7vw;
+            font-size: 1vw;
+            font-weight: 500;
+        }
+        margin-left: 15vw;
+        margin-right: 15vw;
+        button{
+            margin-top: 1vw;
+            margin-left: 9vw;
+        }
+        label{
+            font-size: 0.75vw;
+            color: black;
+            opacity: 0.3;
+            margin: 0.15vw;
+        }
+    }
+    #user-prof{
+        p{
+            padding-top: 0vw;
+            margin-left: 3.5vw;
+        }
+        input::placeholder {
+            font-size: 0.75vw;
+        }
+        option{
+            font-size: 0.75vw;
+        }
+    }
 }
 #graph5{
     position: absolute;
@@ -51,22 +91,31 @@ body{
         width: 18vw;
         margin: 1.5vw;
         height: 30vw;
-        img{
-            width: 6vw;
-            display: block;
-            margin: 1vw;
-            margin-left: auto;
-            margin-right: auto;
-            border: 5px solid #414141;
-            border-radius: 55%;
-            box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-            opacity: 0.90;
+        #pic{
+            img{
+                width: 6vw;
+                display: block;
+                margin-top: 1vw;
+                margin-left: auto;
+                margin-right: auto;
+                border: 5px solid #414141;
+                border-radius: 50%;
+                box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+                opacity: 0.90;
+            }
+            button{
+                position: relative;
+                top: -2.5vw;
+                right: -10vw;
+                height: 2.5vw;
+                width: 2.5vw;
+            }
         }
         p{
             font-size: 0.75vw;
             color: black;
             opacity: 0.3;
-            margin: 0.20vw;
+            margin: 0.10vw;
         }
         #ori{
             color: black;
@@ -75,10 +124,6 @@ body{
         }
         hr{
             color: black;
-        }
-        button{
-            margin-top: 0.8vw;
-            margin-left: 1.75vw;
         }
     }
 }

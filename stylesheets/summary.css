@@ -127,3 +127,108 @@ body{
         }
     }
 }
+#user-content {
+    #wishlist-container {
+        height: 13.5vw;
+        width: 51vw;
+        margin-left: 1vw;
+        margin-right: 1.5vw;
+        border-radius: 2%/4%;
+        display: flex;
+        align-items: center;
+        position: relative;
+        padding-left: 2.5vw;
+        padding-right: 2.5vw;
+    }
+
+    .wishlist-items-wrapper {
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+        padding: 0 1vw;
+    }
+
+    .wishlist-items-wrapper::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+
+    #header-wishlist {
+        font-size: 1.35vw;
+        padding-top: 0.75vw;
+        padding-left: 1.5vw;
+        margin-bottom: 0vw;
+        font-weight: 500;
+        color: black;
+        opacity: 0.75;
+    }
+
+    #wishlist-item {
+        position: relative;
+        height: 11vw;
+        min-width: 8.75vw; 
+        border: 1px solid #414141;
+        border-radius: 10%;
+        margin: 0.25vw;
+    }
+
+    #wishlist-item-image {
+        background: #852852;
+        height: 5.5vw;
+        width: 5.5vw;
+        margin: 1vw;
+        margin-bottom: 0.3vw;
+        margin-left: 1.55vw;
+        border-radius: 5%/10%;
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    }
+
+    #item-name {
+        font-weight: 400;
+        font-size: 0.75vw;
+        color: black;
+        padding-left: 0.75vw;
+        padding-right: 0.75vw;
+        text-align: center;
+        width: 8.75vw;
+        word-wrap: break-word;
+        margin-bottom: 0.15vw;
+    }
+
+    /* Navigation Arrows Styling */
+    .nav-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 2vw;
+        height: 2vw;
+        border: none;
+        border-radius: 50%;
+        background: whitesmoke;
+        opacity: 0.8;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+        transition: background-color 0.3s ease;
+    }
+
+    .nav-arrow:hover {
+        background: rgba(255, 255, 255, 1);
+    }
+
+    #prev-btn {
+        left: 0;
+    }
+
+    #next-btn {
+        right: 0;
+    }
+
+    .nav-arrow i {
+        color: #121212;
+        font-size: 1vw;
+    }
+}

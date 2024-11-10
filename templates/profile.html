@@ -75,15 +75,18 @@
                             <label for="confirm-password" class="form-label">Confirm Password</label>
                             <input type="password" class="form-control" id="confirm-password" required>
                         </div>
-                        <button type="submit" class="btn btn-lg btn-success" onclick="showForm('textarea')">Submit</button>
+                        <div class="d-flex gap-4">
+                        <button type="submit" class="btn btn-success" onclick="showForm('textarea')">Submit</button>
+                        <button type="submit" class="btn btn-secondary" onclick="showForm('textarea')">Cancel</button>
+                      </div>
                     </form>
                 </div>
                 <div id="user-prof" class="mt-5 pform" style="display: none;">
                     <p>Service Professional Registration</p>
                     <form>
                         <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" disabled>
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" disabled>
                         </div>
                         <div class="mb-3">
                             <label for="service-name" class="form-label">Service Name</label>
@@ -125,7 +128,10 @@
                               </div>
                           </div>
                       </div>
+                      <div class="d-flex gap-4">
                         <button type="submit" class="btn btn-primary" onclick="showForm('textarea')">Submit</button>
+                        <button type="submit" class="btn btn-secondary" onclick="showForm('textarea')">Cancel</button>
+                      </div>
                     </form>
                 </div>
                 <div id="user-content">
@@ -200,6 +206,77 @@
                       <i class="fa-solid fa-chevron-right"></i>
                     </button>
                   </div>
+                  <p id="header-previous" style="padding-top: 0vw;">Previously Ordered</p>
+                  <div id="previous-container">
+                    <button id="prev-btn" class="nav-arrow" style="display: none;">
+                      <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <div class="previous-items-wrapper d-flex gap-3">
+                      <div id="previous-item">
+                        <div id="previous-item-image">
+
+                        </div>
+                        <p id="item-name">Saksham Sirohi Ji</p>
+                        <div class="d-flex gap-4 px-4">
+                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
+                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
+                        </div>
+                      </div>
+                      <div id="previous-item">
+                        <div id="previous-item-image">
+
+                        </div>
+                        <p id="item-name">Saksham Sirohi Ji</p>
+                        <div class="d-flex gap-4 px-4">
+                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
+                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
+                        </div>
+                      </div>
+                      <div id="previous-item">
+                        <div id="previous-item-image">
+
+                        </div>
+                        <p id="item-name">Saksham Sirohi Ji</p>
+                        <div class="d-flex gap-4 px-4">
+                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
+                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
+                        </div>
+                      </div>
+                      <div id="previous-item">
+                        <div id="previous-item-image">
+
+                        </div>
+                        <p id="item-name">Saksham Sirohi Ji</p>
+                        <div class="d-flex gap-4 px-4">
+                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
+                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
+                        </div>
+                      </div>
+                      <div id="previous-item">
+                        <div id="previous-item-image">
+
+                        </div>
+                        <p id="item-name">Saksham Sirohi Ji</p>
+                        <div class="d-flex gap-4 px-4">
+                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
+                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
+                        </div>
+                      </div>
+                      <div id="previous-item">
+                        <div id="previous-item-image">
+
+                        </div>
+                        <p id="item-name">Saksham Sirohi Ji</p>
+                        <div class="d-flex gap-4 px-4">
+                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
+                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
+                        </div>
+                      </div>
+                    </div>
+                    <button id="next-btn" class="nav-arrow">
+                      <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                  </div>
                 </div>
             </div>
         </div>
@@ -232,80 +309,91 @@
         </ul>
     </footer>
     <script>
-      function showForm(formId) {
-          // Hide all forms
-          document.querySelectorAll('.pform').forEach(form => form.style.display = 'none');
-
-          // Show the selected form
-          document.getElementById(formId).style.display = 'block';
-      }
-      document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('searchInput');
-            const searchModal = document.getElementById('searchModal');
-            
-            // Show modal when clicking on search input
-            searchInput.addEventListener('click', function(e) {
-                searchModal.style.display = 'block';
-                e.stopPropagation();
-            });
-
-            // Hide modal when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!searchModal.contains(e.target) && e.target !== searchInput) {
-                    searchModal.style.display = 'none';
-                }
-            });
-
-            // Prevent modal from closing when clicking inside it
-            searchModal.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
-
-            // Handle search item clicks
-            document.querySelectorAll('.search-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    searchInput.value = this.textContent.trim();
-                    searchModal.style.display = 'none';
-                });
-            });
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-              const container = document.querySelector('.wishlist-items-wrapper');
-              const prevBtn = document.getElementById('prev-btn');
-              const nextBtn = document.getElementById('next-btn');
+                function showForm(formId) {
+              // Hide all forms first
+              document.querySelectorAll('.pform').forEach(form => form.style.display = 'none');
               
-              // Function to check scroll position and update arrow visibility
-              function updateArrowVisibility() {
-                  const isAtStart = container.scrollLeft === 0;
-                  const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth;
-                  
-                  prevBtn.style.display = isAtStart ? 'none' : 'block';
-                  nextBtn.style.display = isAtEnd ? 'none' : 'block';
+              // Hide user-content when showing any form
+              const userContent = document.getElementById('user-content');
+              
+              if (formId === 'textarea') {
+                  // If 'textarea' is passed, show user-content and hide forms
+                  userContent.style.display = 'block';
+              } else {
+                  // For any other form, hide user-content and show the requested form
+                  userContent.style.display = 'none';
+                  document.getElementById(formId).style.display = 'block';
               }
+          }
+
+          document.addEventListener('DOMContentLoaded', function() {
+              // Search functionality
+              const searchInput = document.getElementById('searchInput');
+              const searchModal = document.getElementById('searchModal');
               
-              // Initial check
-              updateArrowVisibility();
-              
-              // Scroll amount for each click
-              const scrollAmount = 350;
-              
-              // Add click handlers for navigation
-              nextBtn.addEventListener('click', () => {
-                  container.scrollLeft += scrollAmount;
-                  setTimeout(updateArrowVisibility, 100);
+              searchInput.addEventListener('click', function(e) {
+                  searchModal.style.display = 'block';
+                  e.stopPropagation();
               });
-              
-              prevBtn.addEventListener('click', () => {
-                  container.scrollLeft -= scrollAmount;
-                  setTimeout(updateArrowVisibility, 100);
+
+              document.addEventListener('click', function(e) {
+                  if (!searchModal.contains(e.target) && e.target !== searchInput) {
+                      searchModal.style.display = 'none';
+                  }
               });
-              
-              // Update arrow visibility on scroll
-              container.addEventListener('scroll', updateArrowVisibility);
-              
-              // Update arrow visibility on window resize
-              window.addEventListener('resize', updateArrowVisibility);
+
+              searchModal.addEventListener('click', function(e) {
+                  e.stopPropagation();
+              });
+
+              document.querySelectorAll('.search-item').forEach(item => {
+                  item.addEventListener('click', function() {
+                      searchInput.value = this.textContent.trim();
+                      searchModal.style.display = 'none';
+                  });
+              });
+
+              // Function to setup scroll arrows for a container
+              function setupScrollArrows(containerClass) {
+                  const container = document.querySelector(`.${containerClass}`);
+                  const prevBtn = container.parentElement.querySelector('#prev-btn');
+                  const nextBtn = container.parentElement.querySelector('#next-btn');
+                  
+                  function updateArrowVisibility() {
+                      const isAtStart = container.scrollLeft === 0;
+                      const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth;
+                      
+                      prevBtn.style.display = isAtStart ? 'none' : 'block';
+                      nextBtn.style.display = isAtEnd ? 'none' : 'block';
+                  }
+                  
+                  // Initial check
+                  updateArrowVisibility();
+                  
+                  // Scroll amount for each click (350px)
+                  const scrollAmount = 350;
+                  
+                  // Add click handlers for navigation
+                  nextBtn.addEventListener('click', () => {
+                      container.scrollLeft += scrollAmount;
+                      setTimeout(updateArrowVisibility, 100);
+                  });
+                  
+                  prevBtn.addEventListener('click', () => {
+                      container.scrollLeft -= scrollAmount;
+                      setTimeout(updateArrowVisibility, 100);
+                  });
+                  
+                  // Update arrow visibility on scroll
+                  container.addEventListener('scroll', updateArrowVisibility);
+                  
+                  // Update arrow visibility on window resize
+                  window.addEventListener('resize', updateArrowVisibility);
+              }
+
+              // Setup arrows for both wishlist and previous items containers
+              setupScrollArrows('wishlist-items-wrapper');
+              setupScrollArrows('previous-items-wrapper');
           });
   </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

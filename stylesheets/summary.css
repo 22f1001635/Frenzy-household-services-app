@@ -56,7 +56,7 @@ body{
         margin-right: 15vw;
         button{
             margin-top: 1vw;
-            margin-left: 9vw;
+            margin-left: 3.5vw;
         }
         label{
             font-size: 0.75vw;
@@ -128,8 +128,8 @@ body{
     }
 }
 #user-content {
-    #wishlist-container {
-        height: 13.5vw;
+    #wishlist-container,#previous-container {
+        height: 13vw;
         width: 51vw;
         margin-left: 1vw;
         margin-right: 1.5vw;
@@ -141,7 +141,7 @@ body{
         padding-right: 2.5vw;
     }
 
-    .wishlist-items-wrapper {
+    .wishlist-items-wrapper,.previous-items-wrapper {
         overflow-x: auto;
         scroll-behavior: smooth;
         scrollbar-width: none; /* Firefox */
@@ -149,13 +149,13 @@ body{
         padding: 0 1vw;
     }
 
-    .wishlist-items-wrapper::-webkit-scrollbar {
+    .wishlist-items-wrapper::-webkit-scrollbar,.previous-items-wrapper::-webkit-scrollbar {
         display: none; /* Chrome, Safari, Opera */
     }
 
-    #header-wishlist {
+    #header-wishlist,#header-previous {
         font-size: 1.35vw;
-        padding-top: 0.75vw;
+        padding-top: 0.5vw;
         padding-left: 1.5vw;
         margin-bottom: 0vw;
         font-weight: 500;
@@ -163,7 +163,7 @@ body{
         opacity: 0.75;
     }
 
-    #wishlist-item {
+    #wishlist-item,#previous-item {
         position: relative;
         height: 11vw;
         min-width: 8.75vw; 
@@ -172,8 +172,7 @@ body{
         margin: 0.25vw;
     }
 
-    #wishlist-item-image {
-        background: #852852;
+    #wishlist-item-image,#previous-item-image {
         height: 5.5vw;
         width: 5.5vw;
         margin: 1vw;

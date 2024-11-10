@@ -202,3 +202,41 @@ footer{
         top: 17%;
     }
 }
+.find{
+    .search-modal {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: none;
+        z-index: 2;
+    }
+    
+    .search-container {
+        position: relative;
+    }
+    
+    .search-results {
+        max-height: 20vw;
+        overflow-y: auto;
+    }
+    
+    .search-item {
+        padding: 10px 15px;
+        border-bottom: 0.1vw solid var(--bs-border-color);
+        border-radius: 2%/3%;
+        cursor: pointer;
+    }
+    
+    .search-item:hover {
+        background-color: var(--bs-secondary-bg);
+    }
+    
+    .search-item:last-child {
+        border-bottom: none;
+    }
+}

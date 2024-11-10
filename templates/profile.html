@@ -26,15 +26,8 @@
               <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="#">Home</a>
               </li>
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Services
-                </a>
-                <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#">Beauty</a></li>
-                  <li><a class="dropdown-item" href="#">Cleaning</a></li>
-                  <li><a class="dropdown-item" href="#">Essentials</a></li>
-                </ul>
+              <li class="nav-item">
+                <a class="nav-link" aria-current="page" href="#">Services</a>
               </li>
               <li class="nav-item"></li>
                 <a class="nav-link" href="#">About</a>
@@ -44,10 +37,22 @@
               </li>
             </ul>
             <!--needs to be tested later upon linking-->
-            <form class="d-flex" role="search">
-              <input class="form-control" type="search" placeholder="Search" aria-label="Search">
-            </form>
-            <div id="shopping"><a href=""><i class="fa-solid fa-cart-shopping" draggable="false"></i></a></div>
+            <div class="find">
+            <div class="search-container me-2">
+              <input class="form-control" type="search" placeholder="Search" id="searchInput">
+              <div class="search-modal" id="searchModal">
+                  <div class="p-3">
+                      <h6 class="mb-3">Search Results</h6>
+                      <div class="search-results">
+                          <div class="search-item">
+                              Sample Result 1
+                          </div>
+                      </div>
+                  </div>
+              </div>
+            </div>
+            </div>
+            <div id="shopping" style="padding-left: 3vw;"><a href=""><i class="fa-solid fa-cart-shopping" draggable="false"></i></a></div>
             <div id="user"><a href=""><i class="fa-solid fa-user" draggable="false"></i>{{SignIn/Up}}</a></div>
           </div>
         </div>
@@ -123,15 +128,18 @@
                         <button type="submit" class="btn btn-primary" onclick="showForm('textarea')">Submit</button>
                     </form>
                 </div>
-                <div id="textarea" class="mt-5 pform" style="display: none;">
-                    <h2>Textarea Form</h2>
-                    <form>
-                        <div class="mb-3">
-                            <label for="text-area" class="form-label">Text Area</label>
-                            <textarea class="form-control" id="text-area" rows="5" required></textarea>
+                <div id="user-content">
+                  <p>Your Wishlist</p>
+                  <div id="wishlist-container">
+                      <div id="wishlist-item">
+                        <div id="wishlist-item-image">
+
                         </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </form>
+                        <p></p>
+                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
+                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
+                      </div>
+                  </div>
                 </div>
             </div>
         </div>
@@ -171,6 +179,36 @@
           // Show the selected form
           document.getElementById(formId).style.display = 'block';
       }
+      document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const searchModal = document.getElementById('searchModal');
+            
+            // Show modal when clicking on search input
+            searchInput.addEventListener('click', function(e) {
+                searchModal.style.display = 'block';
+                e.stopPropagation();
+            });
+
+            // Hide modal when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchModal.contains(e.target) && e.target !== searchInput) {
+                    searchModal.style.display = 'none';
+                }
+            });
+
+            // Prevent modal from closing when clicking inside it
+            searchModal.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            // Handle search item clicks
+            document.querySelectorAll('.search-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    searchInput.value = this.textContent.trim();
+                    searchModal.style.display = 'none';
+                });
+            });
+        });
   </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>

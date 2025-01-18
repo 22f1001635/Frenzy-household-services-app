@@ -4,9 +4,7 @@ body{
 }
 #forms{
     padding:0% 7%;
-    #back{
-        position: relative;
-    }
+    padding-top: 3.5% !important;
     #back>a{
         text-decoration: none;
         color: #d1d1d1;
@@ -16,22 +14,19 @@ body{
         color: black;
     }
     #back > a > i {
-        position: absolute;
-        font-size: 250%;
-        padding-left: 3vw;
-        padding-top: 3vw;
-        padding-right: 30vw;
-        vertical-align: middle;
+        font-size: 2.5vw !important;
+        padding: 0% !important;
+        margin: 3vw;
     }
     #back > p {
         position: absolute;
         margin-left: 36vw;
-        padding-top: 3vw;
+        margin-top: 3vw;
         display: inline-block;
-        vertical-align: middle;
     }
     #box{
-    padding: 5vw;
+    padding: 4.75vw !important;
+    padding-bottom: 2vw !important;
     border-radius: 2em;
     img{
         width: 40%;
@@ -39,12 +34,11 @@ body{
     }     
 }
 .mainform{
-    padding: 2%;
+    padding: 1% !important;
+    width: 100% !important;
 }
 #head{
     font-size: 1.7em;
-    margin-top: 0.5vw;
-    padding-left: 0.9vw;
     font-weight: 600;
 }
 .text-dark-muted>a{
@@ -58,7 +52,7 @@ body{
     opacity: 100 !important;
 }
 .cart,.address,.cards,.new,.service{
-    height: 58vh;
+    height: 60.80vh;
     overflow: auto;
     position: relative;
 }
@@ -98,21 +92,23 @@ body{
         width: 3vw ;
         position: relative;
         top: 2.35vw;
-        left: 39vw;
+        left: 36vw;
     }
     .btn-danger{
         height: 3vw ;
         width: 3vw ;
         position: relative;
         top: 2.35vw;
-        left: 41vw;
+        left: 37vw;
+    }
+    i{
+        font-size: 1vw;
     }
 }
 .order-confirm{
     position: relative;
-    top:2vw;
+    top:1vw;
     text-align: center;
-    right: 2vw;
     h3{
         margin: 3vw;
         padding: 1vw;
@@ -126,7 +122,7 @@ body{
     }
 }
 .saved,.new{
-    height: 9.5vw;
+    height:10vw;
     #meth{
         position: absolute;
         margin: 1vw;
@@ -136,7 +132,7 @@ body{
     font-size: 0.9vw;
 }
 .address-items,.card-items{
-    width: 65vw;
+    width: 68vw;
     margin: 3vw;
     overflow: auto;
     padding-top: 0.5vw;
@@ -161,7 +157,7 @@ body{
 .address>button{
     position: relative;
     margin-top: 1vw;
-    margin-left: 57vw;
+    margin-left: 63vw;
 }
 .time-slot,.date-slot{
     margin: 0.8vw;
@@ -201,7 +197,7 @@ body{
     padding: 1vw;
     margin: 1.5vw;
     margin-top: 0.4vw;
-    padding-top: 0.25vw;
+    padding-top: 0.20vw;
     padding-bottom: 0.25vw;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     border-radius: 2%/3%;

@@ -1,20 +1,8 @@
-<!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ }} - Frenzy</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="preload" href="../assets/barber.svg" as="image">
-    <link rel="preload" href="../assets/chef.svg" as="image">
-    <link rel="preload" href="../assets/engineer.svg" as="image">
-    <link rel="icon" href="../assets/frenzy.png">
-    <link rel="stylesheet" href="../stylesheets/main.css">
-  </head>
+<script setup>
+import "@/assets/styles/main.css"
+</script>
+
+<template>
 <body style="font-family: 'Poppins';">
   <nav class="navbar fixed-top navbar-expand-xl bg-body-tertiary">
     <div class="container-fluid py-2" id="nav2">
@@ -31,7 +19,7 @@
           <li class="nav-item">
             <a class="nav-link" aria-current="page" href="#">Services</a>
           </li>
-          <li class="nav-item"></li>
+          <li class="nav-item">
             <a class="nav-link" href="#">About</a>
           </li>
           <li class="nav-item">
@@ -61,9 +49,55 @@
   </nav>
       <main>
         <div>
-          <div id="maintext" style=" width: 30%;"><h2 style="color: coral;">Frenzy: Your Home, Our Priority</h2><br><h5>At Frenzy, we're revolutionizing how you manage household services. Born from the frustration of juggling multiple service providers, we've created a one-stop solution for all your home needs.</h5><br><h5 style="padding-bottom: 28%;">We connect you with vetted professionals for tasks ranging from cleaning to pest control. Our user-friendly app offers convenience, quality assurance, flexible scheduling, and transparent pricing. Founded by industry experts, Frenzy has quickly become the preferred choice for homeowners and renters seeking efficient home management. We're dedicated to continuous improvement and expansion, aiming to make household tasks effortless for everyone. Join Frenzy today and focus on what truly matters in your life.</h5></div>
-          <div id="frenzyabt">
-            <img src="../assets/frenzy.png" draggable="false">
+          <div id="maintext">
+            <br>
+            <h1>Let's Talk</h1>
+            <h5>Have some big idea or brand to develop and need help? Then reach out we'd love to hear about your project  and provide help</h5>
+            <br>
+            <br>
+            <h3>Email</h3>
+            <p></p>
+            <a href=""><h6>support@frenzy.com</h6></a>
+            <br>
+            <br>
+            <h3>Socials</h3>
+            <br>
+            <a href="#"><h6>Twitter</h6></a>
+            <a href="#"><h6>Instagram</h6></a>
+            <a href="#"><h6>Facebook</h6></a>
+            <br>
+          </div>
+          <div id="form-contact">
+            <form>
+              <div class="form-group pb-3 pt-3">
+                <label for="exampleFormControlInput1">Name</label>
+                <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="Your name here">
+              </div>
+              <div class="form-group pb-3">
+                <label for="exampleFormControlInput1">Email address</label>
+                <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="name@example.com">
+              </div>
+              <div class="form-group pb-3">
+                <label for="exampleFormControlSelect1">Query select</label>
+                <select class="form-control" id="exampleFormControlSelect1">
+                <optgroup label="Select Query Type">
+                  <option selected disabled hidden>Select Query Type</option>
+                  <option>General Query</option>
+                  <option>Complaint</option>
+                  <option>Report Fradulant Activity</option>
+                </optgroup>
+                </select>
+              </div>
+              <div class="form-group pb-3">
+                <label for="exampleFormControlTextarea1">Message</label>
+                <textarea class="form-control" id="exampleFormControlTextarea1" rows="5" placeholder="Provide necessary details for the project such as budget,type of service,etc."></textarea>
+              </div>
+              <div class="form-group">
+                <div class="d-grid gap-2 col-6 mx-auto pt-2">
+                  <button type="submit" class="btn btn-primary btn-block ">Submit & Connect</button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       </main>
@@ -80,6 +114,5 @@
           <li class="ms-3"><a class="text-muted" href="#"><i class="fa-brands fa-square-instagram"></i></a></li>
         </ul>
       </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
-</html>
+</template>

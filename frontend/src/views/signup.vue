@@ -1,36 +1,35 @@
-<!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ }} - Frenzy</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="icon" href="../assets/frenzy.png">
-    <link rel="stylesheet" href="../stylesheets/main.css">
-    <link rel="stylesheet" href="../stylesheets/sign.css">
-</head>
+<script setup>
+import "@/assets/styles/main.css"
+import "@/assets/styles/sign.css"
+</script>
+
+<template>
 <body style="font-family: 'Poppins';">
     <main>
-    <div id="forms" style="padding-top: 4%;">
+    <div id="forms" style="padding-top: 3vw; padding-bottom: 6vw;">
         <div id="back"><a href="javascript:window.history.back()"><i class="fa-solid fa-circle-left" style="font-size:250%;"></i></a></div>
-        <div id="box" class="bg-light text-dark" style="padding: 9.5% 4.75%;">
-            <img src="../assets/login.svg" draggable="false" style="padding-left: 7%;">
+        <div id="box" class="bg-light text-dark">
+            <img src="../assets/images/login.svg" draggable="false" style="width: 24.5vw;">
             <div class="mainform">
-                <h2>Welcome Back!</h2>
-                <h6>Enter your Credentials to access your account</h6>
+                <h2>Welcome New User!</h2>
+                <h6>Enter your Information to make your account</h6>
                 <!--Form Fields-->
                 <form method="POST" action="">
                     <div class="form-group pt-2 pb-2">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-control">                    
+                    </div>
+                    <div class="form-group pb-2">
                         <label class="form-label">Email address</label>
                         <input type="email" class="form-control" aria-describedby="emailHelp">
-                        <div id="emailHelp" class="opacity-25">We'll never share your email with anyone else.</div>                    
+                        <div id="emailHelp" class="opacity-25 ">We'll never share your email with anyone else.</div>                    
                     </div>
                     <div class="form-group pb-2">
                         <label class="form-label">Password</label>
+                        <input type="password" class="form-control">                    
+                    </div>
+                    <div class="form-group pb-2">
+                        <label class="form-label">Confirm Password</label>
                         <input type="password" class="form-control">                    
                     </div>
                     <!--form submit button-->
@@ -40,7 +39,7 @@
                 </form>
                 <div class="border-top pt-2">
                     <p class="text-dark-muted opacity-75">
-                        Don't have an account? <a href="#">Sign Up</a>
+                        Already have an account? <a href="#">Sign In</a>
                     </p>
                 </div>
             </div>
@@ -60,6 +59,5 @@
           <li class="ms-3"><a class="text-muted" href="#"><i class="fa-brands fa-square-instagram"></i></a></li>
         </ul>
     </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
-</html>
+</template>

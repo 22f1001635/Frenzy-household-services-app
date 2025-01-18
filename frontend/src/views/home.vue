@@ -1,20 +1,8 @@
-<!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ }} - Frenzy</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="preload" href="../assets/barber.svg" as="image">
-    <link rel="preload" href="../assets/chef.svg" as="image">
-    <link rel="preload" href="../assets/engineer.svg" as="image">
-    <link rel="stylesheet" href="../stylesheets/main.css">
-    <link rel="icon" href="../assets/frenzy.png">
-  </head>
+<script setup>
+import "@/assets/styles/main.css"
+</script>
+
+<template>
 <body style="font-family: 'Poppins';">
   <nav class="navbar fixed-top navbar-expand-xl bg-body-tertiary">
     <div class="container-fluid py-2" id="nav2">
@@ -31,7 +19,7 @@
           <li class="nav-item">
             <a class="nav-link" aria-current="page" href="#">Services</a>
           </li>
-          <li class="nav-item"></li>
+          <li class="nav-item">
             <a class="nav-link" href="#">About</a>
           </li>
           <li class="nav-item">
@@ -76,13 +64,13 @@
             <div id="carouselExampleAutoplaying" class="carousel slide-fade" data-bs-ride="carousel" data-bs-interval="2250" data-bs-wrap="true" data-bs-touch="false" data-bs-pause="false">
               <div class="carousel-inner">
                 <div class="carousel-item active">
-                  <img src="../assets/barber.svg" draggable="false" style="width: 92.5%;">
+                  <img src="../assets/images/barber.svg" draggable="false" style="width: 92.5%;">
                 </div>
                 <div class="carousel-item">
-                  <img src="../assets/chef.svg" draggable="false" style="width: 75%;">
+                  <img src="../assets/images/chef.svg" draggable="false" style="width: 75%;">
                 </div>
                 <div class="carousel-item">
-                  <img src="../assets/engineer.svg" draggable="false" style="width: 80%;">
+                  <img src="../assets/images/engineer.svg" draggable="false" style="width: 80%;">
                 </div>
               </div>
             </div>
@@ -102,6 +90,5 @@
         <li class="ms-3"><a class="text-muted" href="#"><i class="fa-brands fa-square-instagram"></i></a></li>
       </ul>
     </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
-</html>
+</template>

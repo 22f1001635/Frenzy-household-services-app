@@ -23,7 +23,7 @@ const routes = [
     component: home,
     meta:{
       title:'Household Services -Frenzy',
-      desciption:'Home page of Frenzy the household services app'
+      description :'Home page of Frenzy the household services app'
     }
   },
   {
@@ -32,7 +32,7 @@ const routes = [
     component: about,
     meta:{
       title:'About Us -Frenzy',
-      desciption:'Explore how Frenzy the household app was incepted'
+      description :'Explore how Frenzy the household app was incepted'
     }
   },
   {
@@ -41,7 +41,7 @@ const routes = [
     component: cart,
     meta:{
       title:'Services Cart',
-      desciption:'You are visiting your cart at frenzy'
+      description :'You are visiting your cart at frenzy'
     }
   },
   {
@@ -50,7 +50,7 @@ const routes = [
     component: address,
     meta:{
       title:'Cart-Address',
-      desciption:'you are providing your address for delivery of item in cart of your Frenzy account'
+      description :'you are providing your address for delivery of item in cart of your Frenzy account'
     }
   },
   {
@@ -59,7 +59,7 @@ const routes = [
     component: confirmorder,
     meta:{
       title:'Order Status',
-      desciption:'View order status for the order you placed at frenzy'
+      description :'View order status for the order you placed at frenzy'
     }
   },
   {
@@ -68,7 +68,7 @@ const routes = [
     component: contactus,
     meta:{
       title:'Contact Us -Frenzy',
-      desciption:'You have reached the support/contact us page of frenzy! get your queries answered swiftly.'
+      description :'You have reached the support/contact us page of frenzy! get your queries answered swiftly.'
     }
   },
   {
@@ -77,7 +77,7 @@ const routes = [
     component: dashboard,
     meta:{
       title:'Dashboard',
-      desciption:'You have reached your dashboard at frenzy'
+      description :'You have reached your dashboard at frenzy'
     }
   },
   {
@@ -86,7 +86,7 @@ const routes = [
     component: payment,
     meta:{
       title:'Cart-Payment',
-      desciption:'you are providing your payment details for delivery of item in cart of your Frenzy account'
+      description :'you are providing your payment details for delivery of item in cart of your Frenzy account'
     }
   },
   {
@@ -95,7 +95,7 @@ const routes = [
     component: profile,
     meta:{
       title:'Profile',
-      desciption:'View your profile,previous order and items in your wishlist at frenzy'
+      description :'View your profile,previous order and items in your wishlist at frenzy'
     }
   },
   {
@@ -104,7 +104,7 @@ const routes = [
     component: review,
     meta:{
       title:'Order Review',
-      desciption:'please provide review for the order you placed with us!'
+      description :'please provide review for the order you placed with us!'
     }
   },
   {
@@ -113,7 +113,7 @@ const routes = [
     component: scruitny,
     meta:{
       title:'Edit existing service',
-      desciption:'provide scruitny for existing service such as price,name change,etc.'
+      description :'provide scruitny for existing service such as price,name change,etc.'
     }
   },
   {
@@ -122,7 +122,7 @@ const routes = [
     component: service,
     meta:{
       title:'Add a new service',
-      desciption:'provide details for addition of new service to the frenzy app'
+      description :'provide details for addition of new service to the frenzy app'
     }
   },
   {
@@ -131,7 +131,7 @@ const routes = [
     component: signin,
     meta:{
       title:'Signin -Frenzy',
-      desciption:'login to your existing account in the frenzy app'
+      description :'login to your existing account in the frenzy app'
     }
   },
   {
@@ -140,7 +140,7 @@ const routes = [
     component: signup,
     meta:{
       title:'Signup -Frenzy',
-      desciption:'Register a new account in the frenzy app'
+      description :'Register a new account in the frenzy app'
     }
   },
   {
@@ -149,7 +149,7 @@ const routes = [
     component: summary,
     meta:{
       title:'view statistics -Frenzy',
-      description:'View your statistics regarding order,etc at frenzy'
+      description :'View your statistics regarding order,etc at frenzy'
     }
   },
   {
@@ -158,7 +158,7 @@ const routes = [
     component: wishlist,
     meta:{
       title:'Services Wishlist',
-      desciption:'You are visiting your wishlist at frenzy'
+      description :'You are visiting your wishlist at frenzy'
     }
   }
 ]

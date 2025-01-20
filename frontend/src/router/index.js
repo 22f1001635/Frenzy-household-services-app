@@ -15,6 +15,7 @@ import signin from '@/views/signin.vue'
 import signup from '@/views/signup.vue'
 import summary from '@/views/statistics.vue'
 import wishlist from '@/views/wishlist.vue'
+import test from '@/views/test.vue'
 
 const routes = [
   {
@@ -160,6 +161,11 @@ const routes = [
       title:'Services Wishlist',
       description :'You are visiting your wishlist at frenzy'
     }
+  },
+  {
+    path: '/test',
+    name: 'test',
+    component: test
   }
 ]
 

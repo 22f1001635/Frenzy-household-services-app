@@ -1,6 +1,6 @@
 from models import *
 from flask import Flask,jsonify,request
-
+'''
 @app.route('/api/login',request=['POST'])
 def login():
     data=request.get_json()
@@ -30,9 +30,9 @@ def register():
     db.session.add(user)
     db.session.commit()
     return jsonify({'message': 'Registration successful'}), 201
-
-@app.route('/api/logout')
-@login_required
-def logout():
-    logout_user()
-    return jsonify({'message': 'Logout successful'})
+'''
+@app.route('/api/data')
+def get_data():
+    return jsonify({
+        'message': 'Successfully connected to Flask backend!'
+    })

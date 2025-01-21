@@ -24,7 +24,7 @@ export default defineConfig({
         target: process.env.API_URL,
         changeOrigin: true,
         credentials: 'include',
-        secure: true,
+        secure: false,
         ws:true
       }
     }

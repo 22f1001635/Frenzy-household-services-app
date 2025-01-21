@@ -1,6 +1,29 @@
 <script setup>
 import "@/assets/styles/main.css"
 import "@/assets/styles/sign.css"
+import axios from 'axios'
+import { ref } from 'vue'
+
+const email = ref('')
+const password = ref('')
+
+const handleSubmit = async (event) => {
+    event.preventDefault()
+    try {
+        const response = await axios.post('/api/signin', {  
+                email: email.value,
+                password: password.value     
+        },{
+            timeout: 5000  // 5 second timeout
+        })
+        window.location.href = '/profile'  // Redirect on success
+    }
+    catch(err){
+        const data = await response.json();
+            if (response) {
+            alert(data.message);
+    }}
+}
 </script>
 
 <template>
@@ -14,15 +37,26 @@ import "@/assets/styles/sign.css"
                 <h2>Welcome Back!</h2>
                 <h6>Enter your Credentials to access your account</h6>
                 <!--Form Fields-->
-                <form method="POST" action="">
+                <form @submit="handleSubmit">
                     <div class="form-group pt-2 pb-2">
                         <label class="form-label">Email address</label>
-                        <input type="email" class="form-control" aria-describedby="emailHelp">
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            aria-describedby="emailHelp"
+                            v-model="email"
+                            required
+                        >
                         <div id="emailHelp" class="opacity-25">We'll never share your email with anyone else.</div>                    
                     </div>
                     <div class="form-group pb-2">
                         <label class="form-label">Password</label>
-                        <input type="password" class="form-control">                    
+                        <input 
+                            type="password" 
+                            class="form-control"
+                            v-model="password"
+                            required
+                        >                    
                     </div>
                     <!--form submit button-->
                     <div class="form-group py-3 px-5">

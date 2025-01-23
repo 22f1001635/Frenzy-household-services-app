@@ -31,14 +31,14 @@ const handleSubmit = async (event) => {
     <main>
     <div id="forms" style="padding-top: 4%;">
         <div id="back"><a href="javascript:window.history.back()"><i class="fa-solid fa-circle-left" style="font-size:250%;"></i></a></div>
-        <div id="box" class="bg-light text-dark" style="padding: 9.5% 4.75%;">
-            <img src="../assets/images/login.svg" draggable="false" style="padding-left: 7%;">
+        <div id="box" class="bg-light text-dark">
+            <img src="../assets/images/login.svg" draggable="false">
             <div class="mainform">
-                <h2>Welcome Back!</h2>
+                <h3>Welcome Back!</h3>
                 <h6>Enter your Credentials to access your account</h6>
                 <!--Form Fields-->
                 <form @submit="handleSubmit">
-                    <div class="form-group pt-2 pb-2">
+                    <div class="form-group pt-1 pb-2">
                         <label class="form-label">Email address</label>
                         <input 
                             type="email" 

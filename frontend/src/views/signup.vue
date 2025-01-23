@@ -38,20 +38,20 @@ const handleSubmit = async(event) => {
     <div id="forms" style="padding-top: 3vw; padding-bottom: 6vw;">
         <div id="back"><a href="javascript:window.history.back()"><i class="fa-solid fa-circle-left" style="font-size:250%;"></i></a></div>
         <div id="box" class="bg-light text-dark">
-            <img src="../assets/images/login.svg" draggable="false" style="width: 24.5vw;">
-            <div class="mainform">
-                <h2>Welcome New User!</h2>
+            <img src="../assets/images/login.svg" draggable="false">
+            <div class="mainform2">
+                <h3>Welcome New User!</h3>
                 <h6>Enter your Information to make your account</h6>
                 <!--Form Fields-->
                 <form @submit="handleSubmit">
-                    <div class="form-group pt-2 pb-2">
+                    <div class="form-group pt-1 pb-2">
                         <label class="form-label">Full Name</label>
                         <input type="text" class="form-control" v-model="username" required>                    
                     </div>
                     <div class="form-group pb-2">
                         <label class="form-label">Email address</label>
                         <input type="email" class="form-control" aria-describedby="emailHelp" v-model="email" required>
-                        <div id="emailHelp" class="opacity-25 ">We'll never share your email with anyone else.</div>                    
+                        <div id="emailHelp" class="opacity-25">We'll never share your email with anyone else.</div>                    
                     </div>
                     <div class="form-group pb-2">
                         <label class="form-label">Password</label>

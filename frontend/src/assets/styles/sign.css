@@ -1,11 +1,11 @@
 body{
     background-color: #121212;
-    overflow:auto;
+    overflow:hidden;
 }
 #forms{
     padding:0vw 7vw;
-    padding-bottom: 5vw;
-    padding-top: 3.5% !important;
+    padding-bottom: 3vw;
+    padding-top: 3% !important;
     #back>a{
         text-decoration: none;
         color: #d1d1d1;
@@ -20,23 +20,42 @@ body{
         padding-left: 3vw;
         padding-top: 3vw;
     }
-    #back > h2 {
+    #back > h3 {
         padding-top: 3.5vw;
-
     }
     #box{
     padding: 4.75vw;
     padding-left: 10vw;
     border-radius: 2em;
     display: flex;
+    height: 37.5vw;
     img{
-        width: 30vw;
+        width: 32vw;
+        margin:5%;
         }
     }     
 }
 .mainform{
-    padding: 1vw;
-    padding-left: 15vw;
+position: absolute;
+height: 30vw;
+width: 40vw !important;
+padding: 0vw 7vw !important;
+top: 50% !important;
+left: 50% !important;
+margin-top: 2.5% !important;
+transform: translate(-50%, -50%) !important; 
+margin-left: 20vw;
+}
+.mainform2{
+    position: absolute;
+    height: 30vw;
+    width: 40vw !important;
+    padding: 0vw 7vw !important;
+    top: 42.5% !important;
+    left: 50% !important;
+    margin-top: 0.5% !important;
+    margin-left: 20vw;
+    transform: translate(-50%, -50%) !important; 
 }
 .text-dark-muted>a{
     text-decoration: none;
@@ -48,4 +67,7 @@ body{
     font-weight: 600;
     opacity: 100 !important;
 }
-
+#emailHelp,label{
+    font-size: 0.9vw;
+    opacity: 0.7;
+}

@@ -9,7 +9,7 @@ import "@/assets/styles/cart.css"
   <div id="forms" style="padding-top: 4%;">
     <div id="back"><a href="javascript:window.history.back()"><i class="fa-solid fa-circle-left"></i></a><p class="text-dark" id="head">Select Address</p></div>
       <div id="box" class="bg-light text-dark" style="padding-bottom: 2vw;">
-        <div class="mainform">
+        <div class="mainform3">
           <div class="address">
             <div id="savedAddressSection" >
             <div class="saved" style="padding-top: 0.5vw;">

@@ -9,7 +9,7 @@ import "@/assets/styles/cart.css"
     <div id="forms" style="padding-top: 4%;">
         <div id="back"><a href="javascript:window.history.back()"><i class="fa-solid fa-circle-left" style="font-size:250%;"></i></a><p class="text-dark" id="head">Your Wishlist</p></div>
         <div id="box" class="bg-light text-dark" style="padding-bottom: 2vw;">
-            <div class="mainform">
+            <div class="mainform3">
               <div class="cart">
                 <div class="cart-member">
                     <div class="cart-memeber-photo"></div>

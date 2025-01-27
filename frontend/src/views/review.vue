@@ -9,7 +9,7 @@ import "@/assets/styles/cart.css"
     <div id="forms" style="padding-top: 4%;">
         <div id="back"><a href="javascript:window.history.back()"><i class="fa-solid fa-circle-left" style="font-size:250%;"></i></a><p class="text-dark" id="head">Service Remarks</p></div>
         <div id="box" class="bg-light text-dark" style="padding-bottom: 2vw;">
-            <div class="mainform">
+            <div class="mainform3">
               <div class="cart">
                 <div class="container">
                     <div class="row justify-content-center">
@@ -45,7 +45,7 @@ import "@/assets/styles/cart.css"
                                             <input type="tel" class="form-control" disabled placeholder="{}">
                                         </div>
                                     </div>
-                                    <div class="mb-3">
+                                    <div class="mb-0">
                                         <label class="form-label d-block">Service Rating (5 being the best):</label>
                                         <div class="star-rating">
                                             <input type="hidden" id="rating" name="rating" value="0" required>
@@ -59,9 +59,9 @@ import "@/assets/styles/cart.css"
                                             <div class="invalid-feedback">Please select a rating.</div>
                                         </div>
                                     </div>
-                                    <div class="mb-3">
+                                    <div class="mb-1">
                                         <label class="form-label">Remarks (if any):</label>
-                                        <textarea class="form-control" rows="4"></textarea>
+                                        <textarea class="form-control" rows="3"></textarea>
                                     </div>
                                     <div class="d-flex gap-3 justify-content-center py-2">
                                         <button type="submit" class="btn btn-success">Submit</button>

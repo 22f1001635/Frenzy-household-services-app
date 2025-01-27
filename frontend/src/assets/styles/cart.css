@@ -33,9 +33,10 @@ body{
         }
     }     
 }
-.mainform{
+.mainform3{
     padding: 1% !important;
     width: 100% !important;
+    padding-left: 3% !important;
 }
 #head{
     font-size: 1.7em;

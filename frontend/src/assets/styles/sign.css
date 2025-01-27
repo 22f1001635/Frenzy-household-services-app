@@ -36,15 +36,15 @@ body{
     }     
 }
 .mainform{
-position: absolute;
-height: 30vw;
-width: 40vw !important;
-padding: 0vw 7vw !important;
-top: 50% !important;
-left: 50% !important;
-margin-top: 2.5% !important;
-transform: translate(-50%, -50%) !important; 
-margin-left: 20vw;
+    position: absolute;
+    height: 30vw;
+    width: 40vw !important;
+    padding: 0vw 7vw !important;
+    top: 50% !important;
+    left: 50% !important;
+    margin-top: 2.5% !important;
+    transform: translate(-50%, -50%) !important; 
+    margin-left: 20vw;
 }
 .mainform2{
     position: absolute;

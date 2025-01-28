@@ -10,23 +10,31 @@ import "@/assets/styles/cart.css"
         <div id="back"><a href="javascript:window.history.back()"><i class="fa-solid fa-circle-left" style="font-size:250%;"></i></a><p class="text-dark" id="head">Add Service</p></div>
         <div id="box" class="bg-light text-dark" style="padding-bottom: 2vw;">
             <div class="mainform3">
-              <div class="service" style="overflow: hidden;">
+              <div class="service">
                 <form>
-                  <div class="mb-3">
+                  <div class="mb-1">
                       <label for="serviceName" class="form-label">Service Name:</label>
                       <input type="text" class="form-control" id="serviceName" required>
                   </div>
-                  <div class="mb-3">
+                  <div class="mb-1">
                       <label for="description" class="form-label">Description:</label>
-                      <textarea class="form-control" id="description" rows="4" required></textarea>
+                      <textarea class="form-control" id="description" rows="2" required></textarea>
                   </div>
-                  <div class="mb-3">
+                  <div class="mb-1">
+                      <label for="reqTime" class="form-label">Time required:</label>
+                      <input type="number" class="form-control" id="reqTime" min="1" step="10" max="180" required placeholder="??">
+                  </div>
+                  <div class="mb-1">
                       <label for="basePrice" class="form-label">Base Price:</label>
                       <input type="number" class="form-control" id="basePrice" min="1" step="1" required placeholder="₹">
                   </div>
-                  <div class="d-flex gap-4 py-4" style="margin-left: 10.5vw;">
-                      <button type="submit" class="btn btn-success btn-lg">Add</button>
-                      <button type="button" class="btn btn-warning btn-lg">Cancel</button>
+                  <div class="form-group mb-1">
+                      <label for="serviceLocations">Service Pincodes:</label>
+                      <input type="number" class="form-control" id="serviceLocations" placeholder="Enter Pincodes">
+                    </div>
+                  <div class="d-flex gap-4 py-2" style="margin-left: 5.75vw;">
+                      <button type="submit" class="btn btn-success">Add</button>
+                      <button type="button" class="btn btn-warning">Cancel</button>
                   </div>
               </form>
               </div>

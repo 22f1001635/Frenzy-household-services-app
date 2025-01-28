@@ -221,3 +221,7 @@ body{
   .stars .star.active {
     color: #ffc107;
   }
+  .service{
+    width: 25vw;
+    left: 3.5vw;
+  }

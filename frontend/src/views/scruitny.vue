@@ -10,31 +10,31 @@ import "@/assets/styles/cart.css"
         <div id="back"><a href="javascript:window.history.back()"><i class="fa-solid fa-circle-left" style="font-size:250%;"></i></a><p class="text-dark" id="head">Edit Service</p></div>
         <div id="box" class="bg-light text-dark" style="padding-bottom: 2vw;">
             <div class="mainform3">
-              <div class="service" style="overflow: hidden;">
-                <form>
-                    <div class="form-group mb-2">
+              <div class="service">
+                <form class="pt-3">
+                    <div class="form-group mb-3">
                       <label for="existingService">Select Existing Service:</label>
                       <select class="form-control" id="existingService" onchange="">
                         <option value="">A</option>
                         <!-- Options for existing services will be dynamically populated -->
                       </select>
                     </div>
-                    <div class="form-group mb-2">
-                      <label for="serviceName">Service Name:</label>
-                      <input type="text" class="form-control" id="serviceName" placeholder="Enter service name">
+                    <div class="form-group mb-3">
+                      <label for="reqTime" class="form-label">Time required:</label>
+                      <input type="number" class="form-control" id="reqTime" min="1" step="10" max="180" required placeholder="??">
                     </div>
-                    <div class="form-group mb-2">
-                      <label for="serviceDescription">Description:</label>
-                      <textarea class="form-control" id="serviceDescription" rows="3" placeholder="Enter service description"></textarea>
-                    </div>
-                    <div class="form-group mb-2">
+                    <div class="form-group mb-3">
                       <label for="basePrice">Base Price:</label>
                       <input type="number" class="form-control" id="basePrice" placeholder="Enter base price">
                     </div>
-                    <div class="d-flex py-4 gap-4 justify-content-center">
-                    <button type="button" class="btn btn-lg btn-success" onclick="">Update</button>
-                    <button type="button" class="btn btn-lg btn-danger" onclick="">Delete</button>
-                    <button type="button" class="btn btn-lg btn-secondary">Cancel</button>
+                    <div class="form-group mb-3">
+                      <label for="serviceLocations">Service Pincodes:</label>
+                      <input type="number" class="form-control" id="serviceLocations" placeholder="Enter Pincodes">
+                    </div>
+                    <div class="d-flex py-2 gap-4 justify-content-center">
+                    <button type="button" class="btn btn-success" onclick="">Update</button>
+                    <button type="button" class="btn  btn-danger" onclick="">Delete</button>
+                    <button type="button" class="btn  btn-secondary">Cancel</button>
                     </div>
                   </form>
               </div>

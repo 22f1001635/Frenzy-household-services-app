@@ -1,6 +1,40 @@
 <script setup>
 import "@/assets/styles/main.css"
 import "@/assets/styles/cart.css"
+import axios from 'axios'
+import { ref } from 'vue'
+import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
+
+const name = ref('')
+const description = ref('')
+const time_required = ref('')
+const price = ref('')
+const service_pincodes = ref('')
+const store = useStore()
+const router = useRouter()
+const error = ref('')
+
+const handleSubmit = async (event) => {
+    event.preventDefault()
+    error.value = ''
+    try {
+        const response = await axios.post('/api/addservice', {  
+                name: name.value,
+                description: description.value,
+                time_required: time_required.value,
+                price: price.value,
+                service_pincodes: service_pincodes.value
+        },{
+            timeout: 3000  // 3 second timeout
+        })
+        alert('Service added successfully')
+    }
+    catch(err){
+        error.value = err.response?.data?.message || 'Network error or server unreachable'
+        alert(error.value)
+    }
+}
 </script>
 
 <template>
@@ -11,26 +45,26 @@ import "@/assets/styles/cart.css"
         <div id="box" class="bg-light text-dark" style="padding-bottom: 2vw;">
             <div class="mainform3">
               <div class="service">
-                <form>
+                <form @submit.prevent="handleSubmit">
                   <div class="mb-1">
                       <label for="serviceName" class="form-label">Service Name:</label>
-                      <input type="text" class="form-control" id="serviceName" required>
+                      <input v-model="name" type="text" class="form-control" id="serviceName" required>
                   </div>
                   <div class="mb-1">
                       <label for="description" class="form-label">Description:</label>
-                      <textarea class="form-control" id="description" rows="2" required></textarea>
+                      <textarea v-model="description" class="form-control" id="description" rows="2" required></textarea>
                   </div>
                   <div class="mb-1">
                       <label for="reqTime" class="form-label">Time required:</label>
-                      <input type="number" class="form-control" id="reqTime" min="10" step="5" max="180" required placeholder="??">
+                      <input v-model="time_required" type="number" class="form-control" id="reqTime" min="10" step="5" max="180" required placeholder="??">
                   </div>
                   <div class="mb-1">
                       <label for="basePrice" class="form-label">Base Price:</label>
-                      <input type="number" class="form-control" id="basePrice" min="10" required placeholder="₹">
+                      <input v-model="price" type="number" class="form-control" id="basePrice" min="10" required placeholder="₹">
                   </div>
                   <div class="mb-2">
                       <label for="serviceLocations" class="form-label">Service Pincodes:</label>
-                      <input type="number" class="form-control" id="serviceLocations" placeholder="Enter Pincodes">
+                      <input v-model="service_pincodes" type="text" class="form-control" id="serviceLocations" placeholder="Enter comma-separated pincodes">
                     </div>
                   <div class="d-flex gap-4 py-2" style="margin-left: 5.75vw;">
                       <button type="submit" class="btn btn-success">Add</button>

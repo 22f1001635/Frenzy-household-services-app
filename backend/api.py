@@ -37,7 +37,7 @@ def signin():
                 'id': user.id,
                 'email': user.email,
                 'username': user.username,
-                'role': user.role  # Make sure your User model has this field
+                'role': user.role  
             }}), 200
         
         # Invalid credentials
@@ -109,20 +109,34 @@ def add_service():
     name = data.get('name')
     description = data.get('description')
     time_required = data.get('time_required')
-    service_pincodes=data.get('service_pincodes')
+    service_pincodes = data.get('service_pincodes')
     price = data.get('price')
-    if not name or not price or not description or not time_required or not service_pincodes:
-        return jsonify({
-            'message': 'Provide Complete Credentials'
-        }), 400
-    else:
+
+    # Validate input presence
+    if not all([name, price, description, time_required, service_pincodes]):
+        return jsonify({'message': 'All fields are required'}), 400
+
+    try:
+
         service = Service(
             name=name,
-            price=price,
             description=description,
             time_required=time_required,
-            service_pincodes=service_pincodes
+            base_price=price,  
+            service_area=service_pincodes 
         )
+
         db.session.add(service)
         db.session.commit()
-        return jsonify({'message': 'Service added successfully'}), 201
+        
+        return jsonify({
+            'message': 'Service added successfully',
+            'service_id': service.id
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'message': 'Error adding service',
+            'error': str(e)
+        }), 500

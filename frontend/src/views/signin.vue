@@ -28,7 +28,7 @@ const handleSubmit = async (event) => {
         if (store.getters.isAdmin) {
             router.push('/service')
         } else {
-            router.push('/dashboard')
+            router.push('/profile')
         }
     }
     catch(err){

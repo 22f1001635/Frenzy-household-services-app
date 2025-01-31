@@ -9,7 +9,7 @@ import { useRouter } from 'vue-router'
 const name = ref('')
 const description = ref('')
 const time_required = ref('')
-const price = ref('')
+const base_price = ref('')
 const service_pincodes = ref('')
 const store = useStore()
 const router = useRouter()
@@ -19,11 +19,11 @@ const handleSubmit = async (event) => {
     event.preventDefault()
     error.value = ''
     try {
-        const response = await axios.post('/api/addservice', {  
+        const response = await axios.post('/api/services', {  
                 name: name.value,
                 description: description.value,
                 time_required: time_required.value,
-                price: price.value,
+                base_price: base_price.value,
                 service_pincodes: service_pincodes.value
         },{
             timeout: 3000  // 3 second timeout
@@ -56,11 +56,11 @@ const handleSubmit = async (event) => {
                   </div>
                   <div class="mb-1">
                       <label for="reqTime" class="form-label">Time required:</label>
-                      <input v-model="time_required" type="number" class="form-control" id="reqTime" min="10" step="5" max="180" required placeholder="??">
+                      <input v-model="time_required" type="number" class="form-control" id="reqTime" min="10" max="180" required placeholder="??">
                   </div>
                   <div class="mb-1">
                       <label for="basePrice" class="form-label">Base Price:</label>
-                      <input v-model="price" type="number" class="form-control" id="basePrice" min="10" required placeholder="₹">
+                      <input v-model="base_price" type="number" class="form-control" id="basePrice" min="10" required placeholder="₹">
                   </div>
                   <div class="mb-2">
                       <label for="serviceLocations" class="form-label">Service Pincodes:</label>

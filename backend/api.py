@@ -101,42 +101,90 @@ def get_data():
     })
 
 
-@app.route('/api/addservice', methods=['POST'])
+@app.route('/api/services', methods=['GET', 'POST'])
 @admin_required
 @login_required
-def add_service():
-    data = request.json
-    name = data.get('name')
-    description = data.get('description')
-    time_required = data.get('time_required')
-    service_pincodes = data.get('service_pincodes')
-    price = data.get('price')
+def handle_services():
+    if request.method == 'GET':
+        # List all services
+        services = Service.query.all()
+        return jsonify([{
+            'id': s.id,
+            'name': s.name,
+            'is_active': s.is_active
+        } for s in services])
+    
+    elif request.method == 'POST':
+        data = request.json
+        name = data.get('name')
+        description = data.get('description')
+        time_required = data.get('time_required')
+        service_pincodes = data.get('service_pincodes')
+        base_price = data.get('base_price')
 
-    # Validate input presence
-    if not all([name, price, description, time_required, service_pincodes]):
-        return jsonify({'message': 'All fields are required'}), 400
+        # Validate input presence
+        if name is None or description is None or time_required is None or service_pincodes is None or base_price is None:
+            print(name, base_price, description, time_required, service_pincodes)
+            return jsonify({'message': 'All fields are required'}), 400
 
-    try:
+        try:
+            service = Service(
+                name=name,
+                description=description,
+                time_required=time_required,
+                base_price=base_price,  
+                service_area=service_pincodes 
+            )
+            print(name, base_price, description, time_required, service_pincodes)
+            db.session.add(service)
+            db.session.commit()
+            
+            return jsonify({
+                'message': 'Service added successfully',
+                'service_id': service.id
+            }), 201
 
-        service = Service(
-            name=name,
-            description=description,
-            time_required=time_required,
-            base_price=price,  
-            service_area=service_pincodes 
-        )
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({
+                'message': 'Error adding service',
+                'error': str(e)
+            }), 500
 
-        db.session.add(service)
-        db.session.commit()
+@app.route('/api/services/<int:service_id>', methods=['GET', 'PUT', 'DELETE', 'PATCH'])
+@admin_required
+@login_required
+def handle_single_service(service_id):
+    service = Service.query.get_or_404(service_id)
+    
+    if request.method == 'GET':
+        return jsonify({
+            'id': service.id,
+            'name': service.name,
+            'time_required': service.time_required,
+            'base_price': service.base_price,
+            'service_pincodes': service.service_area
+        })
+    
+    elif request.method == 'PUT':
+        data = request.json
         
-        return jsonify({
-            'message': 'Service added successfully',
-            'service_id': service.id
-        }), 201
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({
-            'message': 'Error adding service',
-            'error': str(e)
-        }), 500
+        service.name = data.get('name', service.name)
+        service.description = data.get('description', service.description)
+        service.time_required = data.get('time_required', service.time_required)
+        service.base_price = data.get('base_price', service.base_price)
+        service.service_pincodes = data.get('service_pincodes', service.service_area)
+        
+        
+        db.session.commit()
+        return jsonify({'message': 'Service updated successfully'})
+    
+    elif request.method == 'DELETE':
+        db.session.delete(service)
+        db.session.commit()
+        return jsonify({'message': 'Service deleted successfully'})
+    
+    elif request.method == 'PATCH':
+        service.is_active = not service.is_active
+        db.session.commit()
+        return jsonify({'message': 'Service status updated', 'is_active': service.is_active}),200

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import store from "../store"
 import home from '../views/home.vue'
 import about from '../views/aboutus.vue'
 import cart from '../views/cart.vue'
@@ -96,7 +97,8 @@ const routes = [
     component: profile,
     meta:{
       title:'Profile',
-      description :'View your profile,previous order and items in your wishlist at frenzy'
+      description :'View your profile,previous order and items in your wishlist at frenzy',
+      requiresAuth: true
     }
   },
   {
@@ -123,7 +125,8 @@ const routes = [
     component: service,
     meta:{
       title:'Add a new service',
-      description :'provide details for addition of new service to the frenzy app'
+      description :'provide details for addition of new service to the frenzy app',
+      requiresAdmin: true
     }
   },
   {
@@ -132,7 +135,8 @@ const routes = [
     component: signin,
     meta:{
       title:'Signin -Frenzy',
-      description :'login to your existing account in the frenzy app'
+      description :'login to your existing account in the frenzy app',
+      requiresGuest: true
     }
   },
   {
@@ -141,7 +145,8 @@ const routes = [
     component: signup,
     meta:{
       title:'Signup -Frenzy',
-      description :'Register a new account in the frenzy app'
+      description :'Register a new account in the frenzy app',
+      requiresGuest: true
     }
   },
   {
@@ -175,7 +180,10 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
+  await store.dispatch('fetchUser')
+
+  //metadata update
   const { title, description } = to.meta;
   const defaultTitle = 'Frenzy';
   const defaultDescription = 'The household services app';
@@ -185,6 +193,29 @@ router.beforeEach((to) => {
   const descriptionElement = document.querySelector('head meta[name="description"]')
 
   descriptionElement.setAttribute('content', description || defaultDescription)
+  
+  const user = store.state.user; // user data 
+  const isAuthenticated = store.getters.isAuthenticated
+  const isAdmin = store.getters.isAdmin
+
+  // Handle authentication routes
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    // Redirect to signin page if authentication is required
+    return { path: '/signin' }
+  }
+
+  if (to.meta.requiresAdmin && !isAdmin) {
+    // Redirect to profile if admin access is required
+    return { path: '/profile' }
+  }
+
+  if (to.meta.requiresGuest && isAuthenticated) {
+    // Redirect to profile if user is already authenticated
+    return { path: '/profile' }
+  }
+
+  // Allow navigation to proceed
+  return true
 })
 
 export default router

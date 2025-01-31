@@ -21,7 +21,7 @@ class User(db.Model, UserMixin):
     is_blocked = db.Column(db.Boolean, default=False)
     
     __mapper_args__ = {
-        'polymorphic_identity': 'user',
+        'polymorphic_identity': 'admin',
         'polymorphic_on': role
     }
 

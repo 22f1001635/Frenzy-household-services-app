@@ -1,5 +1,14 @@
 from models import *
 from flask import Flask,jsonify,request
+from functools import wraps
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role != "admin":
+            return jsonify({"error": "Access denied"}), 403
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route('/api/signin', methods=['POST'])
 def signin():
@@ -21,7 +30,15 @@ def signin():
         # Check if user exists and password is correct
         if user and user.check_password(password):
             login_user(user)
-            return jsonify({'message': 'Login successful'}), 200
+            print(current_user)
+            return jsonify({
+            'message': 'Login successful',
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'username': user.username,
+                'role': user.role  # Make sure your User model has this field
+            }}), 200
         
         # Invalid credentials
         return jsonify({
@@ -57,6 +74,18 @@ def register():
             'message': 'Password mismatch found'
         }), 401
 
+@app.route('/api/current_user', methods=['GET'])
+@login_required
+def current_user_info():
+    return jsonify({
+        'user': {
+            'id': current_user.id,
+            'email': current_user.email,
+            'username': current_user.username,
+            'role': current_user.role
+        }
+    })
+
 @app.route('/api/logout')
 @login_required
 def logout():
@@ -70,3 +99,30 @@ def get_data():
     return jsonify({
         'message': 'Successfully connected to Flask backend!'
     })
+
+
+@app.route('/api/addservice', methods=['POST'])
+@admin_required
+@login_required
+def add_service():
+    data = request.json
+    name = data.get('name')
+    description = data.get('description')
+    time_required = data.get('time_required')
+    service_pincodes=data.get('service_pincodes')
+    price = data.get('price')
+    if not name or not price or not description or not time_required or not service_pincodes:
+        return jsonify({
+            'message': 'Provide Complete Credentials'
+        }), 400
+    else:
+        service = Service(
+            name=name,
+            price=price,
+            description=description,
+            time_required=time_required,
+            service_pincodes=service_pincodes
+        )
+        db.session.add(service)
+        db.session.commit()
+        return jsonify({'message': 'Service added successfully'}), 201

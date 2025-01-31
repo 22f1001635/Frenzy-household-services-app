@@ -3,26 +3,38 @@ import "@/assets/styles/main.css"
 import "@/assets/styles/sign.css"
 import axios from 'axios'
 import { ref } from 'vue'
+import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
 
 const email = ref('')
 const password = ref('')
+const store = useStore()
+const router = useRouter()
+const error = ref('')
 
 const handleSubmit = async (event) => {
     event.preventDefault()
+    error.value = ''
     try {
         const response = await axios.post('/api/signin', {  
                 email: email.value,
                 password: password.value     
         },{
-            timeout: 5000  // 5 second timeout
+            timeout: 3000  // 3 second timeout
         })
-        window.location.href = '/profile'  // Redirect on success
+        await store.dispatch('fetchUser')
+        
+        // Redirect based on role
+        if (store.getters.isAdmin) {
+            router.push('/service')
+        } else {
+            router.push('/dashboard')
+        }
     }
     catch(err){
-        const data = await response.json();
-            if (response) {
-            alert(data.message);
-    }}
+        error.value = err.response?.data?.message || 'Network error or server unreachable'
+        alert(error.value)
+    }
 }
 </script>
 

@@ -22,14 +22,14 @@ import "@/assets/styles/cart.css"
                   </div>
                   <div class="mb-1">
                       <label for="reqTime" class="form-label">Time required:</label>
-                      <input type="number" class="form-control" id="reqTime" min="1" step="10" max="180" required placeholder="??">
+                      <input type="number" class="form-control" id="reqTime" min="10" step="5" max="180" required placeholder="??">
                   </div>
                   <div class="mb-1">
                       <label for="basePrice" class="form-label">Base Price:</label>
-                      <input type="number" class="form-control" id="basePrice" min="1" step="1" required placeholder="₹">
+                      <input type="number" class="form-control" id="basePrice" min="10" required placeholder="₹">
                   </div>
-                  <div class="form-group mb-1">
-                      <label for="serviceLocations">Service Pincodes:</label>
+                  <div class="mb-2">
+                      <label for="serviceLocations" class="form-label">Service Pincodes:</label>
                       <input type="number" class="form-control" id="serviceLocations" placeholder="Enter Pincodes">
                     </div>
                   <div class="d-flex gap-4 py-2" style="margin-left: 5.75vw;">

@@ -61,7 +61,7 @@ body{
     width: 35vw;
     margin-left: 18vw;
     form{
-        margin-top: 2vw;
+        margin-top: 1vw !important;
         width: 95%;
         padding-left: 1vw;
         label{
@@ -169,6 +169,10 @@ body{
     font-size: 1vw;
     margin-bottom: 0vw;
     margin-top: 0vw;
+}
+label{
+    font-size: 0.8vw !important;
+    opacity: 0.5 !important;
 }
 .new{
     form{

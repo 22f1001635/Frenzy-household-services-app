@@ -1,6 +1,11 @@
 from models import *
-from flask import Flask,jsonify,request
+from flask import Flask,jsonify,request,session
 from functools import wraps
+
+@app.before_request
+def make_session_temporary():
+    if current_user.is_authenticated:
+        session.permanent = False
 
 def admin_required(f):
     @wraps(f)
@@ -30,6 +35,7 @@ def signin():
         # Check if user exists and password is correct
         if user and user.check_password(password):
             login_user(user)
+            session.permanent = False
             print(current_user)
             return jsonify({
             'message': 'Login successful',
@@ -84,12 +90,13 @@ def current_user_info():
             'username': current_user.username,
             'role': current_user.role
         }
-    })
+    }),200
 
 @app.route('/api/logout')
 @login_required
 def logout():
     logout_user()
+    session.clear() #clear all session data
     return jsonify({
         'message': 'Sign Out! Successful'
     }),200

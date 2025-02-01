@@ -116,7 +116,8 @@ const routes = [
     component: scruitny,
     meta:{
       title:'Edit existing service',
-      description :'provide scruitny for existing service such as price,name change,etc.'
+      description :'provide scruitny for existing service such as price,name change,etc.',
+      requiresAdmin: true
     }
   },
   {

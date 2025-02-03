@@ -1,3 +1,4 @@
+
 <template>
     <nav class="navbar fixed-top navbar-expand-xl bg-body-tertiary">
       <div class="container-fluid py-2" id="nav2">
@@ -25,8 +26,7 @@
             <div class="search-container me-2">
               <input class="form-control" type="search" placeholder="Search" id="searchInput">
               <div class="search-modal" id="searchModal">
-                <div class="p-3">
-                  <h6 class="mb-3">Search Results</h6>
+                <div class="p-2">
                   <div class="search-results">
                     <div class="search-item">
                       Sample Result 1
@@ -40,7 +40,7 @@
             <a href=""><i class="fa-solid fa-cart-shopping" draggable="false"></i></a>
           </div>
           <div id="user">
-            <a href=""><i class="fa-solid fa-user" draggable="false"></i>{{ SignInUp }}</a>
+            <a href=""><i class="fa-solid fa-user" draggable="false"></i>{ SignInUp }</a>
           </div>
         </div>
       </div>

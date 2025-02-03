@@ -4,7 +4,7 @@ import "@/assets/styles/main.css"
 
 <template>
 <body style="font-family: 'Poppins';">
-      <main>
+  <main style="padding-top:2.75%;">
         <div>
           <div id="maintext"><h1>Home Services</h1><h3>at your doorstep!</h3></div>
           <div id="products">

@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import store from "../store"
-import home from '../views/home.vue'
-import about from '../views/aboutus.vue'
-import cart from '../views/cart.vue'
-import address from '../views/address.vue'
+import home from '@/views/home.vue'
+import about from '@/views/aboutus.vue'
+import cart from '@/views/cart.vue'
+import address from '@/views/address.vue'
 import confirmorder from '@/views/confirmorder.vue'
 import contactus from '@/views/contactus.vue'
 import dashboard from '@/views/dashboard.vue'

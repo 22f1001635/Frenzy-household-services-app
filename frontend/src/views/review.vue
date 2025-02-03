@@ -1,11 +1,16 @@
 <script setup>
+import { onMounted } from 'vue';
 import "@/assets/styles/main.css"
 import "@/assets/styles/cart.css"
+
+onMounted(() => {
+    window.dispatchEvent(new CustomEvent('vue-component-starsystem'));
+});
 </script>
 
 <template>
 <body style="font-family: 'Poppins';">
-    <main>
+  <main style="padding-top:2.75%;">
     <div id="forms" style="padding-top: 4%;">
         <div id="back"><a href="javascript:window.history.back()"><i class="fa-solid fa-circle-left" style="font-size:250%;"></i></a><p class="text-dark" id="head">Service Remarks</p></div>
         <div id="box" class="bg-light text-dark" style="padding-bottom: 2vw;">
@@ -77,40 +82,5 @@ import "@/assets/styles/cart.css"
         </div>
     </div>
     </main>
-    <!--
-    <script>
-        const stars = document.querySelectorAll('.star');
-        const ratingInput = document.getElementById('rating');
-        
-        stars.forEach((star, index) => {
-          star.addEventListener('mouseover', () => {
-            highlightStars(index + 1);
-          });
-        
-          star.addEventListener('mouseout', () => {
-            highlightStars(parseInt(ratingInput.value));
-          });
-        
-          star.addEventListener('click', () => {
-            setRating(index + 1);
-          });
-        });
-        
-        function highlightStars(rating) {
-          stars.forEach((star, index) => {
-            if (index < rating) {
-              star.classList.add('active');
-            } else {
-              star.classList.remove('active');
-            }
-          });
-        }
-        
-        function setRating(rating) {
-          ratingInput.value = rating;
-          highlightStars(rating);
-        }
-        </script>
-        -->
 </body>
 </template>

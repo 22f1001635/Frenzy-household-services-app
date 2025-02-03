@@ -5,7 +5,7 @@ import "@/assets/styles/cart.css"
 
 <template>
 <body style="font-family: 'Poppins';">
-<main>
+<main style="padding-top:2.75%;">
   <div id="forms" style="padding-top: 4%;">
     <div id="back"><a href="javascript:window.history.back()"><i class="fa-solid fa-circle-left"></i></a><p class="text-dark" id="head">Select Address</p></div>
       <div id="box" class="bg-light text-dark" style="padding-bottom: 2vw;">
@@ -108,17 +108,5 @@ import "@/assets/styles/cart.css"
       </div>
   </div>
 </main>
-    <!--
-    <script>
-      function showSection(sectionId) {
-          // Hide all sections first
-          document.getElementById('savedAddressSection').style.display = 'none';
-          document.getElementById('newAddressSection').style.display = 'none';
-          
-          // Show the selected section
-          document.getElementById(sectionId).style.display = 'inline';
-      }
-      </script>
-      -->
 </body>
 </template>

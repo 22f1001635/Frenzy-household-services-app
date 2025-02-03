@@ -5,7 +5,7 @@ import "@/assets/styles/statistics.css"
 
 <template>
 <body style="font-family: 'Poppins';">
-    <main>
+    <main style="padding-top:2.75%;">
         <div id="graph1">
 
         </div>

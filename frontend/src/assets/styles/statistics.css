@@ -4,10 +4,10 @@ body{
 }
 #graph1{
     position: absolute;
-    top: 8vw;
+    top:5.75vw;
     left: 10vw;
     width:40vw;
-    height:33vw;
+    height:35.5vw;
     border-radius: 3%;
     background:whitesmoke;
 }
@@ -22,31 +22,31 @@ body{
 }
 #graph3{
     position: absolute;
-    top: 8vw;
+    top:5.75vw;
     right:10vw;
     width:38vw;
-    height:13vw;
+    height:15.5vw;
     border-radius: 5%/10%;
     background:whitesmoke;
 }
 #graph4{
     position: absolute;
-    top: 8vw;
+    top:5.75vw;
     left: 10vw;
     width:55vw;
-    height:33vw;
+    height:35vw;
     border-radius: 3%/6%;
     background:whitesmoke;
     .outline{
         margin: 1vw;
-        height:31vw;
+        height:33vw;
         width: 53vw;
         overflow: auto;
         border-radius: 3%/6%;
     }
     #change-password,#user-prof{
         p{
-            padding-top: 2vw;
+            padding-top: 1.5vw;
             color: #121212;
             margin-left: 7vw;
             font-size: 1vw;
@@ -80,17 +80,17 @@ body{
 }
 #graph5{
     position: absolute;
-    top: 8vw;
+    top:5.75vw;
     right:10vw;
     width:21vw;
-    height:33vw;
+    height:35vw;
     border-radius:7.5%/5%;
     background:whitesmoke;
     #prof{
         overflow: auto;
         width: 18vw;
         margin: 1.5vw;
-        height: 30vw;
+        height: 32vw;
         #pic{
             img{
                 width: 6vw;

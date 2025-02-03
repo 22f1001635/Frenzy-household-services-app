@@ -1,11 +1,16 @@
 <script setup>
+import { onMounted } from "vue";
 import "@/assets/styles/main.css"
 import "@/assets/styles/statistics.css"
-</script>
 
+onMounted(() => {
+    window.dispatchEvent(new CustomEvent('vue-component-itemwrap'));
+    window.dispatchEvent(new CustomEvent('vue-component-search'));
+});
+</script>
 <template>
 <body style="font-family: 'Poppins';">
-    <main>
+  <main style="padding-top:2.75%;">
           <div id="graph4">
             <div class="outline">
                 <div id="change-password" class="mt-5 pform" style="display: none;">
@@ -29,7 +34,7 @@ import "@/assets/styles/statistics.css"
                       </div>
                     </form>
                 </div>
-                <div id="user-prof" class="mt-5 pform" style="display: none;">
+                <div id="user-prof" class="mt-4 pform" style="display: none;">
                     <p>Service Professional Registration</p>
                     <form>
                         <div class="mb-3">
@@ -94,57 +99,7 @@ import "@/assets/styles/statistics.css"
 
                         </div>
                         <p id="item-name">Saksham Sirohi Ji</p>
-                        <div class="d-flex gap-4 px-4">
-                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
-                        </div>
-                      </div>
-                      <div id="wishlist-item">
-                        <div id="wishlist-item-image">
-
-                        </div>
-                        <p id="item-name">Saksham Sirohi Ji</p>
-                        <div class="d-flex gap-4 px-4">
-                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
-                        </div>
-                      </div>
-                      <div id="wishlist-item">
-                        <div id="wishlist-item-image">
-
-                        </div>
-                        <p id="item-name">Saksham Sirohi Ji</p>
-                        <div class="d-flex gap-4 px-4">
-                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
-                        </div>
-                      </div>
-                      <div id="wishlist-item">
-                        <div id="wishlist-item-image">
-
-                        </div>
-                        <p id="item-name">Saksham Sirohi Ji</p>
-                        <div class="d-flex gap-4 px-4">
-                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
-                        </div>
-                      </div>
-                      <div id="wishlist-item">
-                        <div id="wishlist-item-image">
-
-                        </div>
-                        <p id="item-name">Saksham Sirohi Ji</p>
-                        <div class="d-flex gap-4 px-4">
-                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
-                        </div>
-                      </div>
-                      <div id="wishlist-item">
-                        <div id="wishlist-item-image">
-
-                        </div>
-                        <p id="item-name">Saksham Sirohi Ji</p>
-                        <div class="d-flex gap-4 px-4">
+                        <div class="d-flex gap-4 px-3">
                         <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
                         <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
                         </div>
@@ -165,57 +120,7 @@ import "@/assets/styles/statistics.css"
 
                         </div>
                         <p id="item-name">Saksham Sirohi Ji</p>
-                        <div class="d-flex gap-4 px-4">
-                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
-                        </div>
-                      </div>
-                      <div id="previous-item">
-                        <div id="previous-item-image">
-
-                        </div>
-                        <p id="item-name">Saksham Sirohi Ji</p>
-                        <div class="d-flex gap-4 px-4">
-                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
-                        </div>
-                      </div>
-                      <div id="previous-item">
-                        <div id="previous-item-image">
-
-                        </div>
-                        <p id="item-name">Saksham Sirohi Ji</p>
-                        <div class="d-flex gap-4 px-4">
-                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
-                        </div>
-                      </div>
-                      <div id="previous-item">
-                        <div id="previous-item-image">
-
-                        </div>
-                        <p id="item-name">Saksham Sirohi Ji</p>
-                        <div class="d-flex gap-4 px-4">
-                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
-                        </div>
-                      </div>
-                      <div id="previous-item">
-                        <div id="previous-item-image">
-
-                        </div>
-                        <p id="item-name">Saksham Sirohi Ji</p>
-                        <div class="d-flex gap-4 px-4">
-                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
-                        </div>
-                      </div>
-                      <div id="previous-item">
-                        <div id="previous-item-image">
-
-                        </div>
-                        <p id="item-name">Saksham Sirohi Ji</p>
-                        <div class="d-flex gap-4 px-4">
+                        <div class="d-flex gap-4 px-3">
                         <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
                         <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
                         </div>
@@ -243,95 +148,5 @@ import "@/assets/styles/statistics.css"
           </div>
         </div>
     </main>
-    <!--
-    <script>
-                function showForm(formId) {
-              // Hide all forms first
-              document.querySelectorAll('.pform').forEach(form => form.style.display = 'none');
-              
-              // Hide user-content when showing any form
-              const userContent = document.getElementById('user-content');
-              
-              if (formId === 'textarea') {
-                  // If 'textarea' is passed, show user-content and hide forms
-                  userContent.style.display = 'block';
-              } else {
-                  // For any other form, hide user-content and show the requested form
-                  userContent.style.display = 'none';
-                  document.getElementById(formId).style.display = 'block';
-              }
-          }
-
-          document.addEventListener('DOMContentLoaded', function() {
-              // Search functionality
-              const searchInput = document.getElementById('searchInput');
-              const searchModal = document.getElementById('searchModal');
-              
-              searchInput.addEventListener('click', function(e) {
-                  searchModal.style.display = 'block';
-                  e.stopPropagation();
-              });
-
-              document.addEventListener('click', function(e) {
-                  if (!searchModal.contains(e.target) && e.target !== searchInput) {
-                      searchModal.style.display = 'none';
-                  }
-              });
-
-              searchModal.addEventListener('click', function(e) {
-                  e.stopPropagation();
-              });
-
-              document.querySelectorAll('.search-item').forEach(item => {
-                  item.addEventListener('click', function() {
-                      searchInput.value = this.textContent.trim();
-                      searchModal.style.display = 'none';
-                  });
-              });
-
-              // Function to setup scroll arrows for a container
-              function setupScrollArrows(containerClass) {
-                  const container = document.querySelector(`.${containerClass}`);
-                  const prevBtn = container.parentElement.querySelector('#prev-btn');
-                  const nextBtn = container.parentElement.querySelector('#next-btn');
-                  
-                  function updateArrowVisibility() {
-                      const isAtStart = container.scrollLeft === 0;
-                      const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth;
-                      
-                      prevBtn.style.display = isAtStart ? 'none' : 'block';
-                      nextBtn.style.display = isAtEnd ? 'none' : 'block';
-                  }
-                  
-                  // Initial check
-                  updateArrowVisibility();
-                  
-                  // Scroll amount for each click (350px)
-                  const scrollAmount = 350;
-                  
-                  // Add click handlers for navigation
-                  nextBtn.addEventListener('click', () => {
-                      container.scrollLeft += scrollAmount;
-                      setTimeout(updateArrowVisibility, 100);
-                  });
-                  
-                  prevBtn.addEventListener('click', () => {
-                      container.scrollLeft -= scrollAmount;
-                      setTimeout(updateArrowVisibility, 100);
-                  });
-                  
-                  // Update arrow visibility on scroll
-                  container.addEventListener('scroll', updateArrowVisibility);
-                  
-                  // Update arrow visibility on window resize
-                  window.addEventListener('resize', updateArrowVisibility);
-              }
-
-              // Setup arrows for both wishlist and previous items containers
-              setupScrollArrows('wishlist-items-wrapper');
-              setupScrollArrows('previous-items-wrapper');
-          });
-  </script>
-  -->
 </body>
 </template>

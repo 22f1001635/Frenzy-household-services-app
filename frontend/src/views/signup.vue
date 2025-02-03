@@ -34,7 +34,7 @@ const handleSubmit = async(event) => {
 
 <template>
 <body style="font-family: 'Poppins';">
-    <main>
+    <main style="padding-top:2.75%;">
     <div id="forms" style="padding-top: 3vw; padding-bottom: 6vw;">
         <div id="back"><a href="javascript:window.history.back()"><i class="fa-solid fa-circle-left" style="font-size:250%;"></i></a></div>
         <div id="box" class="bg-light text-dark">

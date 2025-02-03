@@ -147,37 +147,14 @@
     height: 75%;
     top: 18%;
     left: 65%;
+    padding-right: 15%;
 }
 
 #frenzyabt img {
     max-width: 90%;
     border-radius: 5%;
     padding: 1%;
-}
-@media screen and (max-width: 115rem) {
-    #frenzyabt {
-        top: 22.5%;
-        left: 59%;
-    }
-}
-@media screen and (max-width: 105rem) {
-    #frenzyabt {
-        top: 17.5%;
-        left: 59%;
-    }
-    #frenzyabt img {
-        width: 70%;
-    }
-}
-@media screen and (max-width: 90rem) {
-    #frenzyabt {
-        left: 58%;
-    }
-}
-@media screen and (max-width: 80rem) {
-    #frenzyabt {
-        left: 58%;
-    }
+    top: 16.5%;
 }
 footer{
     background-color: #888;

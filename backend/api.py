@@ -66,41 +66,22 @@ def register():
             'message': 'Provide Complete Credentials'
         }), 400
     
-    # Check if email already exists
-    if User.query.filter_by(email=email).first():
-        return jsonify({
-            'message': 'Email already registered'
-        }), 400
+    else:
+        if User.query.filter_by(email=email).first():
+            return jsonify({'error': 'Email already registered'}), 400
     
-    # Check if passwords match
-    if password != confirm_password:
-        return jsonify({
-            'message': 'Password mismatch found'
-        }), 400
-    
-    # Validate password strength
-    is_valid, error_message = User.validate_password(password) 
-    if not is_valid:
-        return jsonify({
-            'message': error_message
-        }), 400
-    
-    # Create new user
-    try:
-        user = User(
-            email=email,
-            username=username,
-        )
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-        return jsonify({'message': 'Registration successful'}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({
-            'message': 'Error during registration',
-            'error': str(e)
-        }), 500
+        elif(password==confirm_password):
+            user = User(
+                email=email,
+                username=username,
+            )
+            is_valid, error_msg = user.validate_password(password)
+            if not is_valid:
+                return jsonify({'message': error_msg}), 401
+            user.set_password(password)
+            db.session.add(user)
+            db.session.commit()
+            return jsonify({'message': 'Registration successful'}), 201
 
 
 @app.route('/api/change-password', methods=['POST'])

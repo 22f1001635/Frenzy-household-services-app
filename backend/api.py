@@ -1,6 +1,8 @@
 from models import *
-from flask import Flask,jsonify,request,session
+from flask import Flask,jsonify,request,session,send_from_directory
 from functools import wraps
+from werkzeug.utils import secure_filename
+import os,secrets
 
 @app.before_request
 def make_session_temporary():
@@ -68,7 +70,7 @@ def register():
     
     else:
         if User.query.filter_by(email=email).first():
-            return jsonify({'error': 'Email already registered'}), 400
+            return jsonify({'error': 'Email already registered! Please try a different email or login to your existing account'}), 400
     
         elif(password==confirm_password):
             user = User(
@@ -135,19 +137,76 @@ def change_password():
             'error': str(e)  # Ensure the error is included in the response
         }), 500
 
+@app.route('/api/upload-profile-picture', methods=['POST'])
+@login_required
+def upload_profile_picture():
+    if 'profile_picture' not in request.files:
+        return jsonify({'message': 'No file uploaded'}), 400
+        
+    file = request.files['profile_picture']
+    if file.filename == '':
+        return jsonify({'message': 'No selected file'}), 400
 
+    if not allowed_file(file.filename):
+        return jsonify({'message': 'Invalid file type'}), 400
+
+    # Create upload folder if not exists
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.makedirs(app.config['UPLOAD_FOLDER'])
+
+    # Delete old profile picture if not default
+    if current_user.image_file != 'profile.png':
+        old_path = os.path.join(app.config['UPLOAD_FOLDER'], current_user.image_file)
+        if os.path.exists(old_path):
+            try:
+                os.remove(old_path)
+            except:
+                pass
+
+    # Generate unique filename using user ID and random hex string
+    random_hex = secrets.token_hex(8)
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    filename = f"user_{current_user.id}_{random_hex}.{ext}"
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+    try:
+        file.save(filepath)
+        current_user.image_file = filename
+        db.session.commit()
+        return jsonify({'message': 'Profile picture updated', 'filename': filename}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'Error saving profile picture', 'error': str(e)}), 500
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+@app.route('/profile_pictures/<filename>')
+def serve_profile_picture(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/api/current_user', methods=['GET'])
 @login_required
 def current_user_info():
-    return jsonify({
-        'user': {
+    user_data = {
             'id': current_user.id,
             'email': current_user.email,
             'username': current_user.username,
-            'role': current_user.role
-        }
-    }),200
+            'role': current_user.role,    
+            'image_file': current_user.image_file
+    }
+    # Add customer-specific fields
+    if current_user.role == 'customer':
+        customer = Customer.query.get(current_user.id)
+        if customer:
+            user_data.update({
+                'address': customer.address,
+                'pin_code': customer.pin_code,
+                'phone_number': customer.phone_number
+            })
+    
+    return jsonify({'user': user_data}), 200
 
 @app.route('/api/logout')
 @login_required

@@ -23,11 +23,17 @@ const handleSubmit = async(event) => {
         alert('Account Created Successfully!')
         window.location.href = '/signin'
     }
-    catch(err){
-    const data = await response.json();
-        if (response) {
-          alert(data.message);
-    }}
+    catch(err) {
+        if (err.response && err.response.data) {
+            alert(err.response.data.message || err.response.data.error)
+        } else {
+            alert('An error occurred during signup')
+        }
+        username.value = ''
+        email.value = ''
+        password.value = ''
+        confirm_password.value = ''
+    }
 }
 
 </script>

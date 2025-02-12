@@ -1,8 +1,12 @@
 <script setup>
-import { ref,onMounted } from "vue";
+import { ref,onMounted,computed } from "vue";
+import { useStore } from 'vuex';
+import axios from 'axios';
+
+const store = useStore();
+
 import "@/assets/styles/main.css"
 import "@/assets/styles/statistics.css"
-
 onMounted(() => {
     window.dispatchEvent(new CustomEvent('vue-component-itemwrap'));
     window.dispatchEvent(new CustomEvent('vue-component-search'));
@@ -44,6 +48,70 @@ const handleChangePassword = async (event) => {
     console.error('Error:', error);
     alert('Error changing password. Please try again.');
   }
+};
+
+const isUploading = ref(false);
+const profilePictureUrl = computed(() => store.getters.userImage);
+
+const handleImageClick = () => {
+    const requirements = `Profile Picture Requirements:
+- JPG/JPEG/PNG format
+- Max file size: 5MB
+- Square aspect ratio (1:1)`;
+    alert(requirements);
+    document.getElementById('profile-upload').click();
+};
+
+const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+        alert('Invalid file type. Please upload JPG, JPEG or PNG.');
+        return;
+    }
+
+    // Validate file size
+    if (file.size > 5 * 1024 * 1024) {
+        alert('File size exceeds 5MB limit.');
+        return;
+    }
+
+    // Validate aspect ratio
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = async () => {
+        if (img.width !== img.height) {
+            alert('Image must have 1:1 aspect ratio.');
+            return;
+        }
+
+        // Proceed with upload
+        isUploading.value = true;
+        const formData = new FormData();
+        formData.append('profile_picture', file);
+
+        try {
+            const response = await axios.post('/api/upload-profile-picture', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                withCredentials: true
+            });
+
+            // Update user in store
+            await store.dispatch('fetchUser');
+            alert('Profile picture updated successfully!');
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Error updating profile picture. Please try again.');
+        } finally {
+            isUploading.value = false;
+            event.target.value = ''; // Reset input
+        }
+    };
 };
 </script>
 <template>
@@ -175,18 +243,37 @@ const handleChangePassword = async (event) => {
         </div>
         <div id="graph5">
           <div id="prof">
-            <div id="pic"><img src="../assets/images/profile.png" draggable="false"><button class="btn btn-warning" style="border-radius: 50%;" onclick="showForm('change-password')"><i class="fa-solid fa-key"></i></button></div>
-            <p>Name</p>
-            <p id="ori">{Name}</p><hr>
+            <div id="pic"> <img :src="profilePictureUrl" @click="handleImageClick" draggable="false" style="cursor: pointer;">
+            <input type="file" id="profile-upload" hidden accept="image/jpeg, image/png, image/jpg" @change="handleFileUpload">
+            <div v-if="isUploading" class="upload-overlay">
+            Uploading...</div>
+            <button class="btn btn-warning" style="border-radius: 50%;" onclick="showForm('change-password')"><i class="fa-solid fa-key"></i></button></div>
+            <p id="ori"><div id="name">{{ store.state.user?.username }}</div></p>
             <p>Email</p>
-            <p id="ori">{Email}</p><hr>
+            <p id="ori">{{ store.state.user?.email }}</p><hr>
             <p>Address</p>
-            <p id="ori">{hufdsnhfn fnisd nhfn df nndshnfsunanf nasenfnnsdhif njasn fi}</p><hr>
-            <p>User-Type</p>
-            <p id="ori">{User-Type}</p><hr>
+            <p id="ori">{{ store.state.user?.address || 'No address provided' }}</p><hr>
+            <p>Phone Number</p>
+            <p id="ori">{{ store.state.user?.phone_number || 'N/A' }}</p><hr>
+            <p>User Type</p>
+            <p id="ori">{{ store.state.user?.role }}</p><hr>
             <div class="px-4"><button type="button" class="btn btn-warning" onclick="showForm('user-prof')"><p id="ori">Are you a service professional?</p></button></div>
           </div>
         </div>
     </main>
 </body>
 </template>
+<style scoped>
+.upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>

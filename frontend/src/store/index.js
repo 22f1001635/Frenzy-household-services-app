@@ -16,6 +16,10 @@ export default createStore({
     async fetchUser({ commit }) {
       try {
         const response = await fetch('/api/current_user');  
+        if (response.status === 401) {  // If unauthorized
+          commit('setUser', null);
+          return;  // Silent fail, no error thrown
+        }
         const data = await response.json();
         commit('setUser', data.user);
       } catch (error) {
@@ -36,6 +40,9 @@ export default createStore({
   getters: {
     isAuthenticated: state => !!state.user,
     isAdmin: state => state.user?.role === 'admin',
-    currentUser: (state) => state.user
+    currentUser: state => state.user,
+    userImage: state => state.user?.image_file 
+      ? `http://localhost:5000/profile_pictures/${state.user.image_file}`
+      : `http://localhost:5000/profile_pictures/profile.png`
   },
 })

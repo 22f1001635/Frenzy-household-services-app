@@ -8,6 +8,4 @@ const app = createApp(App);
 app.use(router);
 app.use(store);
 
-store.dispatch('fetchUser');
-
 app.mount('#app');

@@ -16,7 +16,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
-    image_file = db.Column(db.String(20), nullable=False, default='profile.png')
+    image_file = db.Column(db.String(255), nullable=False, default='profile.png')
     role = db.Column(db.String(20), nullable=False, default='customer')
     is_blocked = db.Column(db.Boolean, default=False)
     

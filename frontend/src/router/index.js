@@ -183,18 +183,6 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   await store.dispatch('fetchUser')
-
-  //metadata update
-  const { title, description } = to.meta;
-  const defaultTitle = 'Frenzy';
-  const defaultDescription = 'The household services app';
-
-  document.title = title || defaultTitle
-
-  const descriptionElement = document.querySelector('head meta[name="description"]')
-
-  descriptionElement.setAttribute('content', description || defaultDescription)
-  
   const user = store.state.user; // user data 
   const isAuthenticated = store.getters.isAuthenticated
   const isAdmin = store.getters.isAdmin
@@ -218,5 +206,20 @@ router.beforeEach(async (to) => {
   // Allow navigation to proceed
   return true
 })
+
+
+router.afterEach((to) => {
+  // Metadata update
+  const { title, description } = to.meta;
+  const defaultTitle = 'Frenzy';
+  const defaultDescription = 'The household services app';
+
+  document.title = title || defaultTitle;
+
+  const descriptionElement = document.querySelector('head meta[name="description"]');
+  if (descriptionElement) {
+    descriptionElement.setAttribute('content', description || defaultDescription);
+  }
+});
 
 export default router

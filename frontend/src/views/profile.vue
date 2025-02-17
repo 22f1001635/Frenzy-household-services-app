@@ -142,14 +142,10 @@ const handleFileUpload = async (event) => {
                   </div>
                 </form>
               </div>
-                <div id="user-prof" class="mt-4 pform" style="display: none;">
+                <div id="user-prof" class="mt-3 pform" style="display: none;">
                     <p>Service Professional Registration</p>
                     <form>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" disabled>
-                        </div>
-                        <div class="mb-3">
+                        <div class="mb-2">
                             <label for="service-name" class="form-label">Service Name</label>
                             <select class="form-select" id="service-name" required>
                                 <option value="">Select available services</option>
@@ -158,9 +154,17 @@ const handleFileUpload = async (event) => {
                                 <option value="service3">Service 3</option>
                             </select>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-2">
                             <label for="experience" class="form-label">Experience (in yrs)</label>
-                            <input type="number" class="form-control" id="experience" required>
+                            <input type="number" class="form-control" id="experience" max="40" required>
+                        </div>
+                        <div class="mb-2">
+                            <label for="file" class="form-label">Upload Documents File</label>
+                            <input type="file" class="form-control" id="file" accept=".pdf">
+                        </div>
+                        <div class="mb-2">
+                            <label for="mobile" class="form-label">Moblie Number</label>
+                            <input type="number" class="form-control" id="mobile" required>
                         </div>
                         <div class="form-group">
                           <label for="address">Address</label>
@@ -169,7 +173,7 @@ const handleFileUpload = async (event) => {
                                   <input type="text" class="form-control" id="house-no" placeholder="House No., Apartment, Housing">
                               </div>
                           </div>
-                          <div class="row mt-3">
+                          <div class="row mt-2">
                               <div class="col-md-6">
                                   <input type="text" class="form-control" id="area-street-village" placeholder="Area/Street/Village">
                               </div>
@@ -177,7 +181,7 @@ const handleFileUpload = async (event) => {
                                   <input type="text" class="form-control" id="landmark" placeholder="Landmark">
                               </div>
                           </div>
-                          <div class="row mt-3">
+                          <div class="row mt-2">
                               <div class="col-md-4">
                                   <input type="text" class="form-control" id="city" placeholder="City">
                               </div>
@@ -230,7 +234,7 @@ const handleFileUpload = async (event) => {
                         <p id="item-name">Saksham Sirohi Ji</p>
                         <div class="d-flex gap-4 px-3">
                         <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
+                        <button type="button" class="btn btn-secondary"><i class="fa-duotone fa-solid fa-pencil fa-lg"></i></button>
                         </div>
                       </div>
                     </div>
@@ -245,10 +249,9 @@ const handleFileUpload = async (event) => {
           <div id="prof">
             <div id="pic"> <img :src="profilePictureUrl" @click="handleImageClick" draggable="false" style="cursor: pointer;">
             <input type="file" id="profile-upload" hidden accept="image/jpeg, image/png, image/jpg" @change="handleFileUpload">
-            <div v-if="isUploading" class="upload-overlay">
-            Uploading...</div>
+            <div v-if="isUploading" class="upload-overlay">Uploading...</div>
             <button class="btn btn-warning" style="border-radius: 50%;" onclick="showForm('change-password')"><i class="fa-solid fa-key"></i></button></div>
-            <p id="ori"><div id="name">{{ store.state.user?.username }}</div></p>
+            <div id="ori"><div id="name">{{ store.state.user?.username }}</div></div>
             <p>Email</p>
             <p id="ori">{{ store.state.user?.email }}</p><hr>
             <p>Address</p>

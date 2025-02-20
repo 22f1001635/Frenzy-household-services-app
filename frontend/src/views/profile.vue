@@ -113,6 +113,151 @@ const handleFileUpload = async (event) => {
         }
     };
 };
+
+const servicesList = ref([]);
+const selectedServiceId = ref('');
+const experience = ref('');
+const contactNumber = ref('');
+const houseNo = ref('');
+const area = ref('');
+const landmark = ref('');
+const city = ref('');
+const state = ref('');
+const pincode = ref('');
+const documentFile = ref(null);
+const documentError = ref('');
+
+// Fetch active services on component mount
+onMounted(async () => {
+  try {
+    const response = await fetch('/api/services/active');
+    if (!response.ok) {
+      throw new Error('Failed to fetch services');
+    }
+    const data = await response.json();
+    servicesList.value = data;
+    console.log('Services fetched:', data); 
+  } catch (error) {
+    console.error('Error fetching services:', error);
+    alert('Failed to load services. Please try again later.');
+  }
+});
+
+// File handling function
+const handleFileChange = (event) => {
+  const file = event.target.files[0];
+  documentError.value = '';
+  
+  if (!file) {
+    documentFile.value = null;
+    return;
+  }
+  
+  // Validate file type
+  if (!file.type.includes('pdf')) {
+    documentError.value = 'Only PDF files are allowed';
+    event.target.value = '';
+    documentFile.value = null;
+    return;
+  }
+  
+  // Validate file size (20MB)
+  const maxSize = 20 * 1024 * 1024; // 20MB in bytes
+  if (file.size > maxSize) {
+    documentError.value = 'File size exceeds 20MB limit';
+    event.target.value = '';
+    documentFile.value = null;
+    return;
+  }
+  
+  documentFile.value = file;
+};
+
+const handleProfessionalRegistration = async (event) => {
+  event.preventDefault();
+  
+  // Form validation - check all required fields
+  if (!selectedServiceId.value || !experience.value || !contactNumber.value || !pincode.value) {
+    alert('Please fill all required fields');
+    return;
+  }
+  
+  // Validate experience is a number
+  if (isNaN(parseInt(experience.value))) {
+    alert('Experience must be a valid number');
+    return;
+  }
+  
+  // Validate contact number has proper format
+  if (contactNumber.value.length < 10) {
+    alert('Please enter a valid contact number');
+    return;
+  }
+  
+  // Build address only from fields that have values
+  const addressParts = [];
+  if (houseNo.value) addressParts.push(houseNo.value);
+  if (area.value) addressParts.push(area.value);
+  if (landmark.value) addressParts.push(landmark.value);
+  if (city.value) addressParts.push(city.value);
+  if (state.value) addressParts.push(state.value);
+  
+  // Join with commas, but ensure we have at least something
+  const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : "Address not provided";
+
+  try {
+    // Use FormData instead of JSON for file uploads
+    const formData = new FormData();
+    formData.append('service_id', selectedServiceId.value);
+    formData.append('experience', experience.value);
+    formData.append('contact_number', contactNumber.value);
+    formData.append('address', fullAddress);
+    formData.append('pin_code', pincode.value);
+    
+    // Append file if selected
+    if (documentFile.value) {
+      formData.append('document', documentFile.value);
+    }
+    
+    console.log('Sending professional registration data with document');
+    
+    const response = await fetch('/api/register-professional', {
+      method: 'POST',
+      credentials: 'include',
+      body: formData
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      alert('Registration submitted! Awaiting verification.');
+      await store.dispatch('fetchUser'); // Refresh user data
+      document.getElementById('user-prof').style.display = 'none';
+      
+      // Reset form fields
+      selectedServiceId.value = '';
+      experience.value = '';
+      contactNumber.value = '';
+      houseNo.value = '';
+      area.value = '';
+      landmark.value = '';
+      city.value = '';
+      state.value = '';
+      pincode.value = '';
+      documentFile.value = null;
+      documentError.value = '';
+      
+      // Reset file input field
+      document.getElementById('document').value = '';
+    } else {
+      alert(`Registration failed: ${data.message || 'Unknown error'}`);
+      console.error('Server response:', data);
+    }
+  } catch (error) {
+    console.error('Error during professional registration:', error);
+    alert('Registration error. Please try again.');
+  }
+};
 </script>
 <template>
 <body style="font-family: 'Poppins';">
@@ -138,67 +283,68 @@ const handleFileUpload = async (event) => {
                   </div>
                   <div class="d-flex gap-4">
                     <button type="submit" class="btn btn-success">Submit</button>
-                    <button type="button" class="btn btn-secondary"  @click="$router.go(-1)">Cancel</button>
+                    <button type="button" class="btn btn-secondary" onclick="showForm('textarea')">Cancel</button>
                   </div>
                 </form>
               </div>
-                <div id="user-prof" class="mt-3 pform" style="display: none;">
-                    <p>Service Professional Registration</p>
-                    <form>
-                        <div class="mb-2">
-                            <label for="service-name" class="form-label">Service Name</label>
-                            <select class="form-select" id="service-name" required>
-                                <option value="">Select available services</option>
-                                <option value="service1">Service 1</option>
-                                <option value="service2">Service 2</option>
-                                <option value="service3">Service 3</option>
-                            </select>
-                        </div>
-                        <div class="mb-2">
-                            <label for="experience" class="form-label">Experience (in yrs)</label>
-                            <input type="number" class="form-control" id="experience" max="40" required>
-                        </div>
-                        <div class="mb-2">
-                            <label for="file" class="form-label">Upload Documents File</label>
-                            <input type="file" class="form-control" id="file" accept=".pdf">
-                        </div>
-                        <div class="mb-2">
-                            <label for="mobile" class="form-label">Moblie Number</label>
-                            <input type="number" class="form-control" id="mobile" required>
-                        </div>
-                        <div class="form-group">
-                          <label for="address">Address</label>
-                          <div class="row">
-                              <div class="col-md-12">
-                                  <input type="text" class="form-control" id="house-no" placeholder="House No., Apartment, Housing">
-                              </div>
-                          </div>
-                          <div class="row mt-2">
-                              <div class="col-md-6">
-                                  <input type="text" class="form-control" id="area-street-village" placeholder="Area/Street/Village">
-                              </div>
-                              <div class="col-md-6">
-                                  <input type="text" class="form-control" id="landmark" placeholder="Landmark">
-                              </div>
-                          </div>
-                          <div class="row mt-2">
-                              <div class="col-md-4">
-                                  <input type="text" class="form-control" id="city" placeholder="City">
-                              </div>
-                              <div class="col-md-4">
-                                  <input type="text" class="form-control" id="state" placeholder="State">
-                              </div>
-                              <div class="col-md-4">
-                                  <input type="text" class="form-control" id="pincode" placeholder="Pincode">
-                              </div>
-                          </div>
-                      </div>
-                      <div class="d-flex gap-4">
-                        <button type="submit" class="btn btn-primary" onclick="showForm('textarea')">Submit</button>
-                        <button type="submit" class="btn btn-secondary" onclick="showForm('textarea')">Cancel</button>
-                      </div>
-                    </form>
+              <div id="user-prof" class="mt-3 pform" style="display: none;">
+              <p>Service Professional Registration</p>
+              <form @submit="handleProfessionalRegistration">
+                <div class="mb-2">
+                  <label for="service-name" class="form-label">Service Name</label>
+                  <select class="form-select" id="service-name" v-model="selectedServiceId" required>
+                    <option value="" disabled>Select available services</option>
+                    <option v-for="service in servicesList" :key="service.id" :value="service.id">
+                      {{ service.name }}
+                    </option>
+                  </select>
                 </div>
+                <div class="mb-2">
+                  <label for="experience" class="form-label">Experience (in yrs)</label>
+                  <input type="number" class="form-control" id="experience" v-model="experience" max="40" required>
+                </div>
+                <div class="mb-2">
+                  <label for="mobile" class="form-label">Contact Number</label>
+                  <input type="tel" class="form-control" id="mobile" v-model="contactNumber" maxlength="13" required>
+                </div>
+                <div class="mb-2">
+                  <label for="document" class="form-label">Upload verification documents (PDF)</label>
+                  <input type="file" class="form-control" id="document" accept=".pdf" @change="handleFileChange">
+                  <div v-if="documentError" class="text-danger small mt-1">{{ documentError }}</div>
+                </div>
+                <div class="form-group">
+                  <label for="address">Address</label>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <input type="text" class="form-control" id="house-no" v-model="houseNo" placeholder="House No., Apartment">
+                    </div>
+                  </div>
+                  <div class="row mt-2">
+                    <div class="col-md-6">
+                      <input type="text" class="form-control" id="area-street-village" v-model="area" placeholder="Area/Street/Village">
+                    </div>
+                    <div class="col-md-6">
+                      <input type="text" class="form-control" id="landmark" v-model="landmark" placeholder="Landmark">
+                    </div>
+                  </div>
+                  <div class="row mt-2">
+                    <div class="col-md-4">
+                      <input type="text" class="form-control" id="city" v-model="city" placeholder="City">
+                    </div>
+                    <div class="col-md-4">
+                      <input type="text" class="form-control" id="state" v-model="state" placeholder="State">
+                    </div>
+                    <div class="col-md-4">
+                      <input type="text" class="form-control" id="pincode" v-model="pincode" placeholder="Pincode">
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex gap-4">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                  <button type="button" class="btn btn-secondary" onclick="showForm('textarea')">Cancel</button>
+                </div>
+              </form>
+            </div>
                 <div id="user-content">
                   <p id="header-wishlist">From Your Wishlist</p>
                   <div id="wishlist-container">
@@ -256,8 +402,8 @@ const handleFileUpload = async (event) => {
             <p id="ori">{{ store.state.user?.email }}</p><hr>
             <p>Address</p>
             <p id="ori">{{ store.state.user?.address || 'No address provided' }}</p><hr>
-            <p>Phone Number</p>
-            <p id="ori">{{ store.state.user?.phone_number || 'N/A' }}</p><hr>
+            <p>Contact Number</p>
+            <p id="ori">{{ store.state.user?.contact_number || 'N/A' }}</p><hr>
             <p>User Type</p>
             <p id="ori">{{ store.state.user?.role }}</p><hr>
             <div class="px-4"><button type="button" class="btn btn-warning" onclick="showForm('user-prof')"><p id="ori">Are you a service professional?</p></button></div>

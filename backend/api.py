@@ -311,3 +311,172 @@ def handle_single_service(service_id):
         service.is_active = not service.is_active
         db.session.commit()
         return jsonify({'message': 'Service status updated', 'is_active': service.is_active}),200
+
+@app.route('/api/services/active', methods=['GET'])
+def get_active_services():
+    try:
+        services = Service.query.filter_by(is_active=True).all()
+        return jsonify([{
+            'id': service.id,
+            'name': service.name
+        } for service in services])
+    except Exception as e:
+        return jsonify({'message': 'Error fetching services', 'error': str(e)}), 500
+    
+@app.route('/api/register-professional', methods=['POST'])
+@login_required
+def register_professional():
+    try:
+        # Get the current user from the database
+        user = User.query.get(current_user.id)
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+
+        # Check if user already has a professional record
+        existing_professional = (
+                db.session.query(Professional.verification_status)
+                .filter(Professional.id == current_user.id)  # Ensure correct field reference
+                .scalar()  # Fetch a single value instead of an object
+            )
+        if existing_professional == 'pending':
+                return jsonify({'message': 'Application already pending. Please wait for review.'}), 400
+        elif existing_professional == 'verified':
+                return jsonify({'message': 'You are already a verified professional.'}), 400
+        elif existing_professional == 'rejected':
+                pass  # Allow reapplication
+
+        # Check if the request has the file part
+        has_file = 'document' in request.files and request.files['document'].filename != ''
+
+        # Get JSON data from form data instead of request.json
+        data = request.form.to_dict()
+        
+        required_fields = ['service_id', 'experience', 'contact_number', 'pin_code']
+
+        # Validate input for required fields
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({'message': f'Missing required fields: {", ".join(missing_fields)}'}), 400
+
+        if current_user.role != 'user':
+            return jsonify({'message': 'Already a professional/admin'}), 400
+        if len(data.get('contact_number', '')) > 13:
+            return jsonify({'message': 'Contact number too long'}), 400
+
+        # File validation if file is uploaded
+        if has_file:
+            document_file = request.files['document']
+            
+            # Validate file type (PDF only)
+            if not document_file.filename.lower().endswith('.pdf'):
+                return jsonify({'message': 'Only PDF files are allowed'}), 400
+            
+            # Check file size (20MB limit)
+            MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB in bytes
+            document_file.seek(0, os.SEEK_END)
+            file_size = document_file.tell()
+            document_file.seek(0)  # Reset file pointer to beginning
+            
+            if file_size > MAX_FILE_SIZE:
+                return jsonify({'message': 'File size exceeds 20MB limit'}), 400
+
+        # Address handling
+        address_value = data.get('address')
+        if not address_value or not isinstance(address_value, str):
+            address_value = "Address not provided"
+
+        # Handle Customer data - Check if exists with a direct query to avoid ORM issues
+        customer_exists = db.session.query(db.exists().where(Customer.id == user.id)).scalar()
+
+        if not customer_exists:
+            # Insert into customers table
+            stmt = db.insert(Customer.__table__).values(
+                id=user.id,
+                address=address_value,
+                phone_number=data.get('contact_number', ''),
+                pin_code=data.get('pin_code', '')
+            )
+            db.session.execute(stmt)
+        else:
+            # Get the existing customer to update (Minimal Fix Applied Here)
+            customer = db.session.query(Customer).filter_by(id=user.id).first()
+            if customer:
+                customer.address = address_value
+                customer.phone_number = data.get('contact_number', '')
+                customer.pin_code = data.get('pin_code', '')
+
+        # Handle Professional data
+        service_id = int(data.get('service_id')) if str(data.get('service_id', '')).isdigit() else None
+        experience_value = int(data.get('experience')) if str(data.get('experience', '')).isdigit() else 0
+
+        # Check if professional exists with a direct query
+        professional_exists = db.session.query(db.exists().where(Professional.id == user.id)).scalar()
+
+        if not professional_exists:
+            # Insert directly into professionals table
+            stmt = db.insert(Professional.__table__).values(
+                id=user.id,
+                experience=experience_value,
+                service_type=service_id,
+                contact_number=data.get('contact_number', ''),
+                verification_status='pending'
+            )
+            db.session.execute(stmt)
+        else:
+            # Get the existing professional to update
+            professional = Professional.query.get(user.id)
+            if professional:
+                professional.experience = experience_value
+                professional.service_type = service_id
+                professional.contact_number = data.get('contact_number', '')
+                professional.verification_status = 'pending'
+
+        # Handle file upload if a file was provided
+        if has_file:
+            document_file = request.files['document']
+            
+            # Generate a secure filename
+            import uuid
+            secure_filename = f"{uuid.uuid4()}_{document_file.filename}"
+            
+            # Save file to upload folder
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename)
+            document_file.save(file_path)
+            
+            # Check if document already exists for this professional
+            existing_document = ProfessionalDocument.query.filter_by(professional_id=user.id).first()
+            
+            if existing_document:
+                # Remove old file from filesystem if it exists
+                if existing_document.document_url:
+                    try:
+                        old_file_path = os.path.join(app.config['UPLOAD_FOLDER'], existing_document.document_url)
+                        if os.path.exists(old_file_path):
+                            os.remove(old_file_path)
+                    except Exception as e:
+                        print(f"Error removing old document: {str(e)}")
+                
+                # Update existing document record
+                existing_document.document_type = '.pdf'
+                existing_document.document_url = secure_filename
+                existing_document.is_verified = False
+                existing_document.verified_at = None
+                existing_document.verified_by = None
+            else:
+                # Create new document record
+                new_document = ProfessionalDocument(
+                    professional_id=user.id,
+                    document_type='.pdf',
+                    document_url=secure_filename,
+                    is_verified=False
+                )
+                db.session.add(new_document)
+
+        db.session.commit()
+
+        return jsonify({'message': 'Registration submitted for verification'}), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error in registration: {str(e)}")  # Add detailed logging
+        return jsonify({'message': f'Registration failed: {str(e)}'}), 500

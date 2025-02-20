@@ -7,7 +7,6 @@ from extensions import *
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-
 class User(db.Model, UserMixin):
     """Base user model that other user types inherit from"""
     __tablename__ = 'users'
@@ -17,13 +16,8 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     image_file = db.Column(db.String(255), nullable=False, default='profile.png')
-    role = db.Column(db.String(20), nullable=False, default='customer')
+    role = db.Column(db.String(20), nullable=False, default='user') # admin, professional, user
     is_blocked = db.Column(db.Boolean, default=False)
-    
-    __mapper_args__ = {
-        'polymorphic_identity': 'admin',
-        'polymorphic_on': role
-    }
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -68,7 +62,6 @@ class Professional(User):
     __tablename__ = 'professionals'
     
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    description = db.Column(db.Text)
     experience = db.Column(db.Integer)
     service_type = db.Column(db.Integer, db.ForeignKey('services.id'))
     is_verified = db.Column(db.Boolean, default=False)
@@ -76,7 +69,7 @@ class Professional(User):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     rating = db.Column(db.Float, default=3)
     contact_number = db.Column(db.String(13))
-    verification_status = db.Column(db.String(20))  # pending, verified, rejected
+    verification_status = db.Column(db.String(20), default='pending')  # pending, verified, rejected
     verification_date = db.Column(db.DateTime)
     verified_by = db.Column(db.Integer, db.ForeignKey('users.id'))
 
@@ -85,10 +78,10 @@ class Professional(User):
     service = db.relationship('Service', backref='professionals', lazy=True)
     reviews = db.relationship('Review', backref='professional', lazy=True)
     documents = db.relationship('ProfessionalDocument', backref='professional', lazy=True)
-    
+
     __mapper_args__ = {
-        'polymorphic_identity': 'professional',
-        'inherit_condition': (id == User.id)  # Explicitly specify the inheritance condition
+        'inherit_condition': (id == User.id),
+        'polymorphic_identity': 'professional'
     }
 
 class ProfessionalDocument(db.Model):
@@ -97,7 +90,7 @@ class ProfessionalDocument(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     professional_id = db.Column(db.Integer, db.ForeignKey('professionals.id'))
-    document_type = db.Column(db.String(50))
+    document_type = db.Column(db.String(10),default='.pdf')
     document_url = db.Column(db.String(255))
     is_verified = db.Column(db.Boolean, default=False)
     verified_by = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -118,16 +111,17 @@ class Customer(User):
     payment_methods = db.relationship('PaymentMethod', backref='customer', lazy=True,
                                     cascade='all, delete-orphan')
     
-    __mapper_args__ = {
-        'polymorphic_identity': 'customer',
-    }
-    
     def get_default_payment_method(self):
         return PaymentMethod.query.filter_by(
             customer_id=self.id,
             is_default=True,
             is_active=True
         ).first()
+
+    # Explicit inheritance configuration
+    __mapper_args__ = {
+        'polymorphic_identity': 'customer'
+    }
 
 class Service(db.Model):
     """Service model for different types of services offered"""

@@ -142,7 +142,7 @@ def change_password():
 def upload_profile_picture():
     if 'profile_picture' not in request.files:
         return jsonify({'message': 'No file uploaded'}), 400
-        
+
     file = request.files['profile_picture']
     if file.filename == '':
         return jsonify({'message': 'No selected file'}), 400
@@ -150,13 +150,13 @@ def upload_profile_picture():
     if not allowed_file(file.filename):
         return jsonify({'message': 'Invalid file type'}), 400
 
-    # Create upload folder if not exists
-    if not os.path.exists(app.config['UPLOAD_FOLDER']):
-        os.makedirs(app.config['UPLOAD_FOLDER'])
+    # Ensure profile pictures folder exists
+    if not os.path.exists(app.config['PROFILE_PIC_FOLDER']):
+        os.makedirs(app.config['PROFILE_PIC_FOLDER'])
 
     # Delete old profile picture if not default
     if current_user.image_file != 'profile.png':
-        old_path = os.path.join(app.config['UPLOAD_FOLDER'], current_user.image_file)
+        old_path = os.path.join(app.config['PROFILE_PIC_FOLDER'], current_user.image_file)
         if os.path.exists(old_path):
             try:
                 os.remove(old_path)
@@ -167,11 +167,11 @@ def upload_profile_picture():
     random_hex = secrets.token_hex(8)
     ext = file.filename.rsplit('.', 1)[1].lower()
     filename = f"user_{current_user.id}_{random_hex}.{ext}"
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    filepath = os.path.join(app.config['PROFILE_PIC_FOLDER'], filename)
 
     try:
         file.save(filepath)
-        current_user.image_file = filename
+        current_user.image_file = filename  # Store only filename in DB
         db.session.commit()
         return jsonify({'message': 'Profile picture updated', 'filename': filename}), 200
     except Exception as e:
@@ -184,7 +184,7 @@ def allowed_file(filename):
 
 @app.route('/profile_pictures/<filename>')
 def serve_profile_picture(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    return send_from_directory(app.config['PROFILE_PIC_FOLDER'], filename)
 
 @app.route('/api/current_user', methods=['GET'])
 @login_required

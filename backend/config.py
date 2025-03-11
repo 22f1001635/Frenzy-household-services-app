@@ -10,3 +10,4 @@ class Config:
     UPLOAD_FOLDER = os.path.abspath(os.getenv('UPLOAD_FOLDER', 'instance/uploads'))
     ALLOWED_EXTENSIONS = set(os.getenv('ALLOWED_EXTENSIONS', 'png,jpg,jpeg').split(','))
     PROFILE_PIC_FOLDER = os.path.join(UPLOAD_FOLDER, 'profile_pictures')
+    SERVICE_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'services')

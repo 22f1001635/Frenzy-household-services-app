@@ -2,26 +2,31 @@
 import "@/assets/styles/main.css"
 import "@/assets/styles/cart.css"
 import { ref, watch, onMounted } from 'vue'
-import { useStore } from 'vuex'
-
-const store = useStore()
 
 const services = ref([])
+const categories = ref([])
 const selectedService = ref(null)
 const formData = ref({
+  name: '',
   time_required: '',
   base_price: '',
-  service_pincodes: ''
+  service_pincodes: '',
+  category_id: null
 })
+const serviceImage = ref(null)
 
-// Fetch all services on component mount
+// Fetch all services and categories on component mount
 onMounted(async () => {
   try {
-    const response = await fetch('/api/services')
-    services.value = await response.json()
+    const [servicesRes, categoriesRes] = await Promise.all([
+      fetch('/api/services'),
+      fetch('/api/categories')
+    ])
+    services.value = await servicesRes.json()
+    categories.value = await categoriesRes.json()
   } catch (error) {
-    console.error('Error fetching services:', error)
-    alert('Failed to load services')
+    console.error('Error fetching data:', error)
+    alert('Failed to load data')
   }
 })
 
@@ -34,9 +39,11 @@ watch(selectedService, async (newVal) => {
     const service = await response.json()
     
     formData.value = {
+      name: service.name,
       time_required: service.time_required,
       base_price: service.base_price,
-      service_pincodes: service.service_pincodes
+      service_pincodes: service.service_pincodes,
+      category_id: service.category_id
     }
   } catch (error) {
     console.error('Error fetching service details:', error)
@@ -44,21 +51,34 @@ watch(selectedService, async (newVal) => {
   }
 })
 
+const handleImageUpload = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    serviceImage.value = file
+  }
+}
+
 const handleUpdate = async () => {
   if (!selectedService.value || !confirm('Are you sure you want to update this service?')) {
     alert('Please select a service first')
     return
   }
 
+  const formDataObj = new FormData()
+  formDataObj.append('name', formData.value.name)
+  formDataObj.append('time_required', formData.value.time_required)
+  formDataObj.append('base_price', formData.value.base_price)
+  formDataObj.append('service_pincodes', formData.value.service_pincodes)
+  formDataObj.append('category_id', formData.value.category_id)
+  
+  if (serviceImage.value) {
+    formDataObj.append('service_image', serviceImage.value)
+  }
+
   try {
     const response = await fetch(`/api/services/${selectedService.value}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        time_required: parseInt(formData.value.time_required),
-        base_price: parseFloat(formData.value.base_price),
-        service_pincodes: formData.value.service_pincodes
-      })
+      body: formDataObj
     })
 
     if (response.ok) {
@@ -87,7 +107,7 @@ const handleDelete = async () => {
       alert('Service deleted successfully')
       // Reset form and refresh list
       selectedService.value = null
-      formData.value = { time_required: '', base_price: '', service_pincodes: '' }
+      formData.value = { name: '', time_required: '', base_price: '', service_pincodes: '', category_id: null }
       const refreshRes = await fetch('/api/services')
       services.value = await refreshRes.json()
     }
@@ -127,7 +147,7 @@ const handleBlock = async () => {
         <div id="box" class="bg-light text-dark" style="padding-bottom: 2vw;">
             <div class="mainform3">
               <div class="service">
-                <form class="pt-3">
+                <form>
                     <div class="form-group mb-3">
                       <label for="existingService">Select Existing Service:</label>
                       <select class="form-control" id="existingService" v-model="selectedService">
@@ -137,19 +157,40 @@ const handleBlock = async () => {
                         </option>
                       </select>
                     </div>
-                    <div class="form-group mb-3">
-                      <label for="reqTime" class="form-label">Time required:</label>
-                      <input type="number" class="form-control" id="reqTime" min="1" step="10" max="180" required placeholder="??"v-model="formData.time_required">
+                    <div class="row mb-2">
+                      <div class="col-md-6">
+                        <label for="serviceName">Service Name:</label>
+                        <input type="text" class="form-control" id="serviceName" v-model="formData.name" required>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="serviceCategory">Category:</label>
+                        <select class="form-control" id="serviceCategory" v-model="formData.category_id">
+                          <option :value="null">Select category</option>
+                          <option v-for="category in categories" :key="category.id" :value="category.id">
+                            {{ category.name }}
+                          </option>
+                        </select>
+                      </div>
                     </div>
-                    <div class="form-group mb-3">
-                      <label for="basePrice">Base Price:</label>
-                      <input type="number" class="form-control" id="basePrice" placeholder="Enter base price" v-model="formData.base_price">
+                    <div class="row mb-2">
+                      <div class="col-md-6">
+                        <label for="reqTime" class="form-label">Time required:</label>
+                        <input type="number" class="form-control" id="reqTime" min="1" step="10" max="180" required placeholder="??" v-model="formData.time_required">
+                      </div>
+                      <div class="col-md-6">
+                        <label for="basePrice" class="form-label">Base Price:</label>
+                        <input type="number" class="form-control" id="basePrice" placeholder="Enter base price" v-model="formData.base_price">
+                      </div>
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-2">
                       <label for="serviceLocations">Service Pincodes:</label>
                       <input type="text" class="form-control" id="serviceLocations" placeholder="Enter comma-separated pincodes" v-model="formData.service_pincodes">
                     </div>
-                    <div class="d-flex py-2 gap-4 justify-content-center">
+                    <div class="form-group mb-2">
+                      <label for="serviceImage">Update Service Image:</label>
+                      <input type="file" class="form-control" id="serviceImage" @change="handleImageUpload">
+                    </div>
+                    <div class="d-flex px-2 py-2 gap-3 justify-content-center">
                     <button type="button" class="btn btn-success" @click="handleUpdate">Update</button>
                     <button type="button" class="btn btn-warning" @click="handleBlock">Block/Activate</button>
                     <button type="button" class="btn btn-danger" @click="handleDelete">Delete</button>

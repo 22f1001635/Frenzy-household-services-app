@@ -17,6 +17,10 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
 @app.route('/api/signin', methods=['POST'])
 def signin():
     # Get credentials from request
@@ -178,10 +182,6 @@ def upload_profile_picture():
         db.session.rollback()
         return jsonify({'message': 'Error saving profile picture', 'error': str(e)}), 500
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
 @app.route('/profile_pictures/<filename>')
 def serve_profile_picture(filename):
     return send_from_directory(app.config['PROFILE_PIC_FOLDER'], filename)
@@ -223,44 +223,88 @@ def get_data():
         'message': 'Successfully connected to Flask backend!'
     })
 
+def save_service_image(file):
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        # Create a unique filename using random hex
+        unique_filename = f"{secrets.token_hex(8)}_{filename}"
+        # Create service upload folder if it doesn't exist
+        os.makedirs(app.config['SERVICE_UPLOAD_FOLDER'], exist_ok=True)
+        # Save the file
+        file_path = os.path.join(app.config['SERVICE_UPLOAD_FOLDER'], unique_filename)
+        file.save(file_path)
+        return unique_filename
+    return None
+
+def delete_service_image(filename):
+    if filename and filename != 'service-default.png':
+        try:
+            file_path = os.path.join(app.config['SERVICE_UPLOAD_FOLDER'], filename)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                return True
+        except Exception as e:
+            print(f"Error deleting file: {e}")
+    return False
 
 @app.route('/api/services', methods=['GET', 'POST'])
 @admin_required
 @login_required
 def handle_services():
     if request.method == 'GET':
-        # List all services
+        # List all services with category info
         services = Service.query.all()
         return jsonify([{
             'id': s.id,
             'name': s.name,
-            'is_active': s.is_active
+            'is_active': s.is_active,
+            'category': s.category_info.name if s.category_info else None,
+            'category_id': s.category_id,
+            'image_file': s.image_file
         } for s in services])
     
     elif request.method == 'POST':
-        data = request.json
-        name = data.get('name')
-        description = data.get('description')
-        time_required = data.get('time_required')
-        service_pincodes = data.get('service_pincodes')
-        base_price = data.get('base_price')
+        # Handle form data
+        name = request.form.get('name')
+        description = request.form.get('description')
+        time_required = request.form.get('time_required')
+        service_pincodes = request.form.get('service_pincodes')
+        base_price = request.form.get('base_price')
+        category_id = request.form.get('category_id')
+        
+        # Handle file upload
+        image_file = 'service-default.png'  # Default image
+        if 'service_image' in request.files:
+            file = request.files['service_image']
+            if file.filename:
+                saved_filename = save_service_image(file)
+                if saved_filename:
+                    image_file = saved_filename
 
         # Validate input presence
-        if name is None or description is None or time_required is None or service_pincodes is None or base_price is None:
-            print(name, base_price, description, time_required, service_pincodes)
-            return jsonify({'message': 'All fields are required'}), 400
+        if name is None or description is None or time_required is None or base_price is None:
+            return jsonify({'message': 'Required fields are missing'}), 400
 
         try:
             service = Service(
                 name=name,
                 description=description,
-                time_required=time_required,
-                base_price=base_price,  
-                service_area=service_pincodes 
+                time_required=int(time_required),
+                base_price=float(base_price),
+                service_area=service_pincodes if service_pincodes else "",
+                category_id=int(category_id) if category_id else None,
+                image_file=image_file
             )
-            print(name, base_price, description, time_required, service_pincodes)
             db.session.add(service)
             db.session.commit()
+            
+            # Create ServiceLocation entries for each pincode
+            if service_pincodes:
+                pincodes = [p.strip() for p in service_pincodes.split(',') if p.strip()]
+                for pincode in pincodes:
+                    loc = ServiceLocation(service_id=service.id, pin_code=pincode)
+                    db.session.add(loc)
+                db.session.commit()
             
             return jsonify({
                 'message': 'Service added successfully',
@@ -269,6 +313,9 @@ def handle_services():
 
         except Exception as e:
             db.session.rollback()
+            # Clean up the uploaded file if there was an error
+            if image_file != 'service-default.png':
+                delete_service_image(image_file)
             return jsonify({
                 'message': 'Error adding service',
                 'error': str(e)
@@ -284,34 +331,233 @@ def handle_single_service(service_id):
         return jsonify({
             'id': service.id,
             'name': service.name,
+            'description': service.description,
             'time_required': service.time_required,
             'base_price': service.base_price,
-            'service_pincodes': service.service_area
+            'service_pincodes': service.service_area,
+            'category_id': service.category_id,
+            'image_file': service.image_file
         })
     
     elif request.method == 'PUT':
-        data = request.json
+        # Handle form data for update
+        name = request.form.get('name')
+        description = request.form.get('description')
+        time_required = request.form.get('time_required')
+        service_pincodes = request.form.get('service_pincodes', '')
+        base_price = request.form.get('base_price')
+        category_id = request.form.get('category_id')
         
-        service.name = data.get('name', service.name)
-        service.description = data.get('description', service.description)
-        service.time_required = data.get('time_required', service.time_required)
-        service.base_price = data.get('base_price', service.base_price)
-        service.service_pincodes = data.get('service_pincodes', service.service_area)
+        # Validate name field
+        if name and name.strip() == '':
+            return jsonify({'message': 'Service name cannot be empty'}), 400
         
+        if name:
+            service.name = name
+        if description:
+            service.description = description
+        if time_required:
+            service.time_required = int(time_required)
+        if base_price:
+            service.base_price = float(base_price)
+        if category_id:
+            service.category_id = int(category_id)
         
-        db.session.commit()
-        return jsonify({'message': 'Service updated successfully'})
+        # Handle file upload for update
+        old_image = service.image_file
+        if 'service_image' in request.files:
+            file = request.files['service_image']
+            if file.filename:
+                saved_filename = save_service_image(file)
+                if saved_filename:
+                    service.image_file = saved_filename
+                    # Delete old image after updating database entry
+                    if old_image != 'service-default.png':
+                        delete_service_image(old_image)
+        
+        # Update service locations if pincodes have changed
+        if service_pincodes != service.service_area:
+            service.service_area = service_pincodes
+            
+            # Delete existing locations
+            ServiceLocation.query.filter_by(service_id=service.id).delete()
+            
+            # Create new locations
+            if service_pincodes:
+                pincodes = [p.strip() for p in service_pincodes.split(',') if p.strip()]
+                for pincode in pincodes:
+                    loc = ServiceLocation(service_id=service.id, pin_code=pincode)
+                    db.session.add(loc)
+        
+        try:
+            db.session.commit()
+            return jsonify({'message': 'Service updated successfully'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'message': 'Error updating service', 'error': str(e)}), 500
     
     elif request.method == 'DELETE':
-        db.session.delete(service)
-        db.session.commit()
-        return jsonify({'message': 'Service deleted successfully'})
+        try:
+            # Delete the service image if it's not the default
+            if service.image_file != 'service-default.png':
+                delete_service_image(service.image_file)
+            
+            # Service locations will be deleted due to cascade
+            db.session.delete(service)
+            db.session.commit()
+            return jsonify({'message': 'Service deleted successfully'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'message': 'Error deleting service', 'error': str(e)}), 500
     
     elif request.method == 'PATCH':
         service.is_active = not service.is_active
         db.session.commit()
-        return jsonify({'message': 'Service status updated', 'is_active': service.is_active}),200
+        return jsonify({'message': 'Service status updated', 'is_active': service.is_active}), 200
+    
+    elif request.method == 'DELETE':
+        try:
+            # Delete the service image if it's not the default
+            if service.image_file != 'service-default.png':
+                delete_service_image(service.image_file)
+            
+            # Service locations will be deleted due to cascade
+            db.session.delete(service)
+            db.session.commit()
+            return jsonify({'message': 'Service deleted successfully'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'message': 'Error deleting service', 'error': str(e)}), 500
+    
+    elif request.method == 'PATCH':
+        service.is_active = not service.is_active
+        db.session.commit()
+        return jsonify({'message': 'Service status updated', 'is_active': service.is_active}), 200
 
+
+@app.route('/api/categories', methods=['GET', 'POST'])
+@admin_required
+@login_required
+def handle_categories():
+    if request.method == 'GET':
+        # List all categories
+        categories = ServiceCategory.query.all()
+        return jsonify([{
+            'id': c.id,
+            'name': c.name,
+            'description': c.description,
+            'is_active': c.is_active
+        } for c in categories])
+    
+    elif request.method == 'POST':
+        data = request.json
+        name = data.get('name')
+        description = data.get('description')
+        
+        # Validate input
+        if not name:
+            return jsonify({'message': 'Category name is required'}), 400
+        
+        # Check if category with this name already exists
+        existing_category = ServiceCategory.query.filter_by(name=name).first()
+        if existing_category:
+            return jsonify({'message': 'A category with this name already exists'}), 400
+        
+        try:
+            category = ServiceCategory(
+                name=name,
+                description=description
+            )
+            db.session.add(category)
+            db.session.commit()
+            
+            return jsonify({
+                'message': 'Category added successfully',
+                'category_id': category.id
+            }), 201
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({
+                'message': 'Error adding category',
+                'error': str(e)
+            }), 500
+
+@app.route('/api/categories/<int:category_id>', methods=['GET', 'PUT', 'DELETE', 'PATCH'])
+@admin_required
+@login_required
+def handle_single_category(category_id):
+    category = ServiceCategory.query.get_or_404(category_id)
+    
+    if request.method == 'GET':
+        return jsonify({
+            'id': category.id,
+            'name': category.name,
+            'description': category.description,
+            'is_active': category.is_active
+        })
+    
+    elif request.method == 'PUT':
+        data = request.json
+        name = data.get('name')
+        description = data.get('description')
+        
+        if name:
+            # Check if another category already has this name
+            existing = ServiceCategory.query.filter(
+                ServiceCategory.name == name, 
+                ServiceCategory.id != category_id
+            ).first()
+            if existing:
+                return jsonify({'message': 'A category with this name already exists'}), 400
+            category.name = name
+            
+        if description is not None:
+            category.description = description
+        
+        try:
+            db.session.commit()
+            return jsonify({'message': 'Category updated successfully'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'message': 'Error updating category', 'error': str(e)}), 500
+    
+    elif request.method == 'DELETE':
+        # Check if the category has any services
+        if category.services:
+            return jsonify({
+                'message': 'Cannot delete category with associated services. Reassign or delete those services first.'
+            }), 400
+            
+        try:
+            db.session.delete(category)
+            db.session.commit()
+            return jsonify({'message': 'Category deleted successfully'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'message': 'Error deleting category', 'error': str(e)}), 500
+    
+    elif request.method == 'PATCH':
+        category.is_active = not category.is_active
+        db.session.commit()
+        return jsonify({
+            'message': 'Category status updated', 
+            'is_active': category.is_active
+        }), 200
+
+@app.route('/api/categories/active', methods=['GET'])
+def get_active_categories():
+    """Get all active categories - available to all users"""
+    try:
+        categories = ServiceCategory.query.filter_by(is_active=True).all()
+        return jsonify([{
+            'id': c.id,
+            'name': c.name,
+        } for c in categories])
+    except Exception as e:
+        return jsonify({'message': 'Error fetching categories', 'error': str(e)}), 500
+
+    
 @app.route('/api/services/active', methods=['GET'])
 def get_active_services():
     try:

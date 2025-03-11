@@ -10,13 +10,14 @@ import dashboard from '@/views/dashboard.vue'
 import payment from '@/views/payment.vue'
 import profile from '@/views/profile.vue'
 import review from '@/views/review.vue'
-import scruitny from '@/views/scruitny.vue'
+import serviceedit from '@/views/serviceedit.vue'
 import service from '@/views/service.vue'
 import signin from '@/views/signin.vue'
 import signup from '@/views/signup.vue'
 import summary from '@/views/statistics.vue'
 import wishlist from '@/views/wishlist.vue'
 import test from '@/views/test.vue'
+import categorymanagement from '@/views/categorymanagement.vue'
 
 const routes = [
   {
@@ -111,12 +112,22 @@ const routes = [
     }
   },
   {
-    path: '/scruitny',
-    name: 'scruitny',
-    component: scruitny,
+    path: '/serviceedit',
+    name: 'serviceedit',
+    component: serviceedit,
     meta:{
       title:'Edit existing service',
       description :'provide scruitny for existing service such as price,name change,etc.',
+      requiresAdmin: true
+    }
+  },
+  {
+    path: '/categorymanagement',
+    name: 'categorymanagement',
+    component: categorymanagement,
+    meta:{
+      title:'Manage Service Categories',
+      description :'provide scruitny for serivice categories such as add,delete,etc.',
       requiresAdmin: true
     }
   },

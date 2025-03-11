@@ -123,6 +123,19 @@ class Customer(User):
         'polymorphic_identity': 'customer'
     }
 
+class ServiceCategory(db.Model):
+    """Model for service categories"""
+    __tablename__ = 'service_categories'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    description = db.Column(db.Text)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationship with services
+    services = db.relationship('Service', backref='category_info', lazy=True)
+
 class Service(db.Model):
     """Service model for different types of services offered"""
     __tablename__ = 'services'
@@ -133,32 +146,17 @@ class Service(db.Model):
     base_price = db.Column(db.Float, nullable=False)
     time_required = db.Column(db.Integer)  # Time in minutes
     is_active = db.Column(db.Boolean, default=True)
-    category = db.Column(db.String(50))
-    service_area = db.Column(db.String(100))   # General area description
+    service_area = db.Column(db.String(100))   # location pincodes seperated by comma
+    image_file = db.Column(db.String(255), default='service-default.png')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Foreign key relationship with category
+    category_id = db.Column(db.Integer, db.ForeignKey('service_categories.id'), nullable=True)
     
     # Relationships
     service_requests = db.relationship('ServiceRequest', backref='service', lazy=True)
     locations = db.relationship('ServiceLocation', backref='service', lazy=True,
                               cascade='all, delete-orphan')
-    
-    def add_location(self, pin_code):
-        """Helper method to add a new service location"""
-        location = ServiceLocation(service_id=self.id, pin_code=pin_code)
-        db.session.add(location)
-        return location
-    
-    def remove_location(self, pin_code):
-        """Helper method to remove a service location"""
-        location = ServiceLocation.query.filter_by(
-            service_id=self.id, 
-            pin_code=pin_code
-        ).first()
-        if location:
-            db.session.delete(location)
-    
-    def get_active_locations(self):
-        """Helper method to get all active service locations"""
-        return [loc.pin_code for loc in self.locations if loc.is_active]
 
 class ServiceLocation(db.Model):
     """Model for storing service area pin codes"""

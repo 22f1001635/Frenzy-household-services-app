@@ -6,19 +6,19 @@ export default createStore({
   },
   mutations: {
     setUser(state, user) {
-      state.user = user
+      state.user = user;
     },
     logout(state) {
-      state.user = null
+      state.user = null;
     },
   },
   actions: {
     async fetchUser({ commit }) {
       try {
-        const response = await fetch('/api/current_user');  
-        if (response.status === 401) {  // If unauthorized
+        const response = await fetch('/api/current_user');
+        if (response.status === 401) {
           commit('setUser', null);
-          return;  // Silent fail, no error thrown
+          return;
         }
         const data = await response.json();
         commit('setUser', data.user);
@@ -29,11 +29,11 @@ export default createStore({
     },
     async logout({ commit }) {
       try {
-        await fetch('/api/logout')
-        commit('logout')
-        alert('You have been logged out')
+        await fetch('/api/logout');
+        commit('logout');
+        alert('You have been logged out');
       } catch (error) {
-        console.error('Error during logout:', error)
+        console.error('Error during logout:', error);
       }
     }
   },
@@ -41,8 +41,8 @@ export default createStore({
     isAuthenticated: state => !!state.user,
     isAdmin: state => state.user?.role === 'admin',
     currentUser: state => state.user,
-    userImage: state => state.user?.image_file 
+    userImage: state => state.user?.image_file
       ? `http://localhost:5000/profile_pictures/${state.user.image_file}`
       : `http://localhost:5000/profile_pictures/profile.png`
   },
-})
+});

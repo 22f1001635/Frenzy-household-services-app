@@ -406,7 +406,10 @@ const handleProfessionalRegistration = async (event) => {
             <p id="ori">{{ store.state.user?.contact_number || 'N/A' }}</p><hr>
             <p>User Type</p>
             <p id="ori">{{ store.state.user?.role }}</p><hr>
-            <div class="px-4"><button type="button" class="btn btn-warning" onclick="showForm('user-prof')"><p id="ori">Are you a service professional?</p></button></div>
+            <div class="px-4">
+            <button v-if="store.state.user?.role === 'admin'" type="button" class="btn btn-sm btn-danger">Accept/Reject Professional Request</button>
+            <button v-else-if="store.state.user?.role === 'professional'" type="button" class="btn btn-sm btn-success">Professional Dashboard</button>
+            <button v-else-if="store.state.user?.role === 'user'" type="button" class="btn btn-sm btn-warning" onclick="showForm('user-prof')"><p id="ori">Are you a service professional?</p></button></div>
           </div>
         </div>
     </main>

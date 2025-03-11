@@ -10,13 +10,14 @@ import dashboard from '@/views/dashboard.vue'
 import payment from '@/views/payment.vue'
 import profile from '@/views/profile.vue'
 import review from '@/views/review.vue'
-import scruitny from '@/views/scruitny.vue'
+import serviceedit from '@/views/serviceedit.vue'
 import service from '@/views/service.vue'
 import signin from '@/views/signin.vue'
 import signup from '@/views/signup.vue'
 import summary from '@/views/statistics.vue'
 import wishlist from '@/views/wishlist.vue'
 import test from '@/views/test.vue'
+import categorymanagement from '@/views/categorymanagement.vue'
 
 const routes = [
   {
@@ -111,12 +112,22 @@ const routes = [
     }
   },
   {
-    path: '/scruitny',
-    name: 'scruitny',
-    component: scruitny,
+    path: '/serviceedit',
+    name: 'serviceedit',
+    component: serviceedit,
     meta:{
       title:'Edit existing service',
       description :'provide scruitny for existing service such as price,name change,etc.',
+      requiresAdmin: true
+    }
+  },
+  {
+    path: '/categorymanagement',
+    name: 'categorymanagement',
+    component: categorymanagement,
+    meta:{
+      title:'Manage Service Categories',
+      description :'provide scruitny for serivice categories such as add,delete,etc.',
       requiresAdmin: true
     }
   },
@@ -182,34 +193,31 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  await store.dispatch('fetchUser')
-  const user = store.state.user; // user data 
-  const isAuthenticated = store.getters.isAuthenticated
-  const isAdmin = store.getters.isAdmin
+  if (store.state.user === null) { // Only fetch if not already loaded
+    await store.dispatch('fetchUser');
+  }
 
-  // Handle authentication routes
+  const user = store.state.user;
+  const isAuthenticated = store.getters.isAuthenticated;
+  const isAdmin = store.getters.isAdmin;
+
   if (to.meta.requiresAuth && !isAuthenticated) {
-    // Redirect to signin page if authentication is required
-    return { path: '/signin' }
+    return { path: '/signin' };
   }
 
   if (to.meta.requiresAdmin && !isAdmin) {
-    // Redirect to profile if admin access is required
-    return { path: '/profile' }
+    return { path: '/profile' };
   }
 
   if (to.meta.requiresGuest && isAuthenticated) {
-    // Redirect to profile if user is already authenticated
-    return { path: '/profile' }
+    return { path: '/profile' };
   }
 
-  // Allow navigation to proceed
-  return true
-})
-
+  return true;
+});
 
 router.afterEach((to) => {
-  // Metadata update
+  
   const { title, description } = to.meta;
   const defaultTitle = 'Frenzy';
   const defaultDescription = 'The household services app';
@@ -222,4 +230,4 @@ router.afterEach((to) => {
   }
 });
 
-export default router
+export default router;

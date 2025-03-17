@@ -229,3 +229,24 @@ class Notification(db.Model):
     message = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_read = db.Column(db.Boolean, default=False)
+
+class UserServiceAction(db.Model):
+    """Model to track user actions: cart, wishlist, or immediate purchases."""
+    __tablename__ = 'user_service_actions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    service_id = db.Column(db.Integer, db.ForeignKey('services.id', ondelete='CASCADE'), nullable=False)
+    action_type = db.Column(db.String(20), nullable=False)  # Values: 'cart', 'wishlist', 'buy_now'
+    quantity = db.Column(db.Integer, default=1)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
+
+    # Relationships
+    user = db.relationship('User', backref='service_actions')
+    service = db.relationship('Service', backref='user_actions')
+
+    # Ensure unique entries per user-service-action type (e.g., avoid duplicate cart items)
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'service_id', 'action_type', name='unique_user_service_action'),
+    )

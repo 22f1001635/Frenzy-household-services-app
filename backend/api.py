@@ -557,18 +557,47 @@ def get_active_categories():
     except Exception as e:
         return jsonify({'message': 'Error fetching categories', 'error': str(e)}), 500
 
-    
+
 @app.route('/api/services/active', methods=['GET'])
 def get_active_services():
     try:
         services = Service.query.filter_by(is_active=True).all()
         return jsonify([{
             'id': service.id,
-            'name': service.name
+            'name': service.name,
+            'description': service.description,
+            'time_required': service.time_required,
+            'base_price': service.base_price,
+            'image_file': service.image_file,
+            'category_id': service.category_id,
+            'service_pincodes': [loc.pin_code for loc in service.locations]
         } for service in services])
     except Exception as e:
         return jsonify({'message': 'Error fetching services', 'error': str(e)}), 500
     
+@app.route('/service_images/<filename>')
+def serve_service_image(filename):
+    return send_from_directory(app.config['SERVICE_UPLOAD_FOLDER'], filename)
+
+@app.route('/api/service-actions', methods=['POST'])
+@login_required
+def handle_service_action():
+    data = request.json
+    action = UserServiceAction(
+        user_id=current_user.id,
+        service_id=data['service_id'],
+        action_type=data['action_type'],
+        quantity=data.get('quantity', 1)
+    )
+    
+    try:
+        db.session.add(action)
+        db.session.commit()
+        return jsonify({'message': 'Action completed successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': str(e)}), 500
+
 @app.route('/api/register-professional', methods=['POST'])
 @login_required
 def register_professional():

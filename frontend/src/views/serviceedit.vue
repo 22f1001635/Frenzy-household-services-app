@@ -141,7 +141,7 @@ const handleBlock = async () => {
 
 <template>
 <body style="font-family: 'Poppins';">
-  <main style="padding-top:2.75%;">
+  <main>
     <div id="forms" style="padding-top: 4%;">
         <div id="back"><a href="javascript:window.history.back()"><i class="fa-solid fa-circle-left" style="font-size:250%;"></i></a><p class="text-dark" id="head">Edit Service</p></div>
         <div id="box" class="bg-light text-dark" style="padding-bottom: 2vw;">

@@ -346,7 +346,7 @@ const handleProfessionalRegistration = async (event) => {
               </form>
             </div>
                 <div id="user-content">
-                  <p id="header-wishlist">From Your Wishlist</p>
+                  <p id="header-wishlist">Active Orders</p>
                   <div id="wishlist-container">
                     <button id="prev-btn" class="nav-arrow" style="display: none;">
                       <i class="fa-solid fa-chevron-left"></i>

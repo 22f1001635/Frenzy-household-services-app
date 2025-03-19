@@ -583,17 +583,54 @@ def serve_service_image(filename):
 @login_required
 def handle_service_action():
     data = request.json
-    action = UserServiceAction(
-        user_id=current_user.id,
-        service_id=data['service_id'],
-        action_type=data['action_type'],
-        quantity=data.get('quantity', 1)
-    )
-    
     try:
+        action_type = data['action_type']
+        service_id = data['service_id']
+        quantity = data.get('quantity', 1)
+
+        # Handle cart special case (update quantity)
+        if action_type == 'cart':
+            existing = UserServiceAction.query.filter_by(
+                user_id=current_user.id,
+                service_id=service_id,
+                action_type='cart'
+            ).first()
+
+            if existing:
+                # Update existing cart item quantity
+                existing.quantity += quantity
+                db.session.commit()
+                return jsonify({
+                    'message': 'Cart quantity updated',
+                    'new_quantity': existing.quantity
+                }), 200
+                
+        # Handle other actions (wishlist/buy_now) with uniqueness check
+        else:
+            existing = UserServiceAction.query.filter_by(
+                user_id=current_user.id,
+                service_id=service_id,
+                action_type=action_type
+            ).first()
+
+            if existing:
+                return jsonify({
+                    'message': f'Item already in {action_type.replace("_", " ")}',
+                    'error_type': 'duplicate'
+                }), 409
+
+        # Create new entry if no existing
+        action = UserServiceAction(
+            user_id=current_user.id,
+            service_id=service_id,
+            action_type=action_type,
+            quantity=quantity
+        )
+        
         db.session.add(action)
         db.session.commit()
         return jsonify({'message': 'Action completed successfully'}), 200
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': str(e)}), 500
@@ -776,17 +813,20 @@ def get_service_actions(action_type):
         }
     } for action in actions])
 
-@app.route('/api/service-actions/<int:action_id>', methods=['DELETE'])
+@app.route('/api/service-actions/<int:action_id>', methods=['PATCH'])
 @login_required
-def delete_service_action(action_id):
+def update_service_action(action_id):
     action = UserServiceAction.query.get_or_404(action_id)
     if action.user_id != current_user.id:
         return jsonify({'message': 'Unauthorized'}), 403
+
+    data = request.json
+    if 'quantity' in data:
+        action.quantity = data['quantity']
     
     try:
-        db.session.delete(action)
         db.session.commit()
-        return jsonify({'message': 'Item removed successfully'})
+        return jsonify({'message': 'Quantity updated'})
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': str(e)}), 500

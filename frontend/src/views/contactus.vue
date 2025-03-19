@@ -35,7 +35,7 @@ import "@/assets/styles/main.css"
                 <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="name@example.com">
               </div>
               <div class="form-group pb-3">
-                <label for="exampleFormControlSelect1">Query select</label>
+                <label for="exampleFormControlSelect1">Query Type</label>
                 <select class="form-control" id="exampleFormControlSelect1">
                 <optgroup label="Select Query Type">
                   <option selected disabled hidden>Select Query Type</option>

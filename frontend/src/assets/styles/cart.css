@@ -85,18 +85,18 @@
         margin: 1vw;
     }
     h4{
-        margin: 1.25vw;
-        width: 250px;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
         position: relative;
         top: 47.5%;
         left: 10%;
         transform: translate(-50%, -50%);
+        margin: 1.25vw;
+        width: 250px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
     .btn-warning,#quantity{
         height: 3vw ;
-        width: 3vw ;
+        width: 3.5vw ;
         position: relative;
         top: 2.35vw;
         left: 36vw;

@@ -24,6 +24,17 @@ const removeFromCart = async (itemId) => {
     alert('Failed to remove item')
   }
 }
+
+const updateQuantity = async (itemId, newQuantity) => {
+  try {
+    await axios.patch(`/api/service-actions/${itemId}`, {
+      quantity: newQuantity
+    })
+  } catch (error) {
+    console.error('Error updating quantity:', error)
+    alert('Failed to update quantity')
+  }
+}
 </script>
 
 <template>
@@ -45,7 +56,7 @@ const removeFromCart = async (itemId) => {
                              style="width: 90px; height: 90px; object-fit: cover; border-radius: 8px;">
                     </div>
                     <h4>{{ item.service.name }}</h4>
-                    <input type="number" class="form-control" id="quantity" v-model="item.quantity" min="1" max="9">
+                    <input type="number" class="form-control" id="quantity" v-model.number="item.quantity" min="1" max="9" @change="updateQuantity(item.id, item.quantity)">
                     <button type="button" class="btn btn-danger" @click="removeFromCart(item.id)">
                         <i class="fa-duotone fa-solid fa-trash-can fa-lg"></i>
                     </button>

@@ -2,7 +2,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { useStore } from 'vuex'
 import axios from 'axios'
+import { useRouter } from 'vue-router'
 import "@/assets/styles/dashboard.css"
+const router = useRouter()
 const store = useStore()
 const categories = ref([])
 const servicesByCategory = ref({})
@@ -67,12 +69,25 @@ const handleServiceAction = async (actionType, event) => {
     if (actionType === 'buy_now') {
       router.push('/payment')
     } else {
-      alert(`Service added to ${actionType.replace('_', ' ')}!`)
+      const message = actionType === 'cart' && response.data.new_quantity 
+        ? `Quantity updated to ${response.data.new_quantity}`
+        : `Service added to ${actionType.replace('_', ' ')}!`
+      
+      alert(message)
       closeServiceDetails()
     }
   } catch (error) {
-    console.error('Action failed:', error)
-    alert(error.response?.data?.message || 'Failed to perform action')
+    if (error.response?.data?.error_type === 'duplicate') {
+      if (actionType === 'buy_now') {
+        // Redirect to payment if duplicate buy_now action
+        router.push('/payment')
+      } else {
+        alert(error.response.data.message)
+      }
+    } else {
+      console.error('Action failed:', error)
+      alert(error.response?.data?.message || 'Failed to perform action')
+    }
   }
 }
 const registerContainerRef = (el, categoryId) => {

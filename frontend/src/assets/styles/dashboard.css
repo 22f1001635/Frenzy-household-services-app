@@ -1,7 +1,3 @@
-body {
-    margin-top: 3%;
-}
-
 .category-section {
     margin: 1rem 0;
 }
@@ -87,6 +83,9 @@ body {
     margin: 0 0 0.5rem;
     font-size: 0.9rem;
     color: #333;
+    width: 185px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .price-badge {
@@ -202,11 +201,14 @@ body {
     transform: scale(1.05);
 }
 
-.detail-info h2 {
+.detail-info h3 {
     font-size: 1.8rem;
     margin: 0 0 0.5rem;
     color: #333;
     line-height: 1.2;
+    width: 325px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .meta-info {
@@ -296,19 +298,21 @@ body {
     font-size: 1.2rem;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     transition: all 0.2s;
+
+    input[type=number] {
+        -moz-appearance: textfield;
+        -webkit-appearance: textfield;
+        appearance: textfield;
+    }
+    
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
 }
 
-input[type=number] {
-    -moz-appearance: textfield;
-    -webkit-appearance: textfield;
-    appearance: textfield;
-}
-
-input[type=number]::-webkit-outer-spin-button,
-input[type=number]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
 
 .quantity-control button:hover {
     background: #000000;
@@ -358,17 +362,17 @@ input[type=number]::-webkit-inner-spin-button {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.cart { 
+.cart2 { 
     background: #3498db; 
     grid-column: 1;
 }
 
-.wishlist { 
+.wishlist2 { 
     background: #e74c3c; 
     grid-column: 2;
 }
 
-.buy { 
+.buy2 { 
     background: #27ae60; 
     grid-column: 1 / span 2;
 }

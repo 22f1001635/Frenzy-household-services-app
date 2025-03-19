@@ -755,3 +755,38 @@ def register_professional():
         db.session.rollback()
         print(f"Error in registration: {str(e)}")  # Add detailed logging
         return jsonify({'message': f'Registration failed: {str(e)}'}), 500
+
+@app.route('/api/service-actions/<action_type>', methods=['GET'])
+@login_required
+def get_service_actions(action_type):
+    actions = UserServiceAction.query.filter_by(
+        user_id=current_user.id,
+        action_type=action_type,
+        is_active=True
+    ).join(Service).all()
+    
+    return jsonify([{
+        'id': action.id,
+        'quantity': action.quantity,
+        'service': {
+            'id': action.service.id,
+            'name': action.service.name,
+            'image_file': action.service.image_file,
+            'base_price': action.service.base_price
+        }
+    } for action in actions])
+
+@app.route('/api/service-actions/<int:action_id>', methods=['DELETE'])
+@login_required
+def delete_service_action(action_id):
+    action = UserServiceAction.query.get_or_404(action_id)
+    if action.user_id != current_user.id:
+        return jsonify({'message': 'Unauthorized'}), 403
+    
+    try:
+        db.session.delete(action)
+        db.session.commit()
+        return jsonify({'message': 'Item removed successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': str(e)}), 500

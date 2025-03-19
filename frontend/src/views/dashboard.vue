@@ -57,24 +57,22 @@ const closeServiceDetails = () => {
 }
 
 const handleServiceAction = async (actionType, event) => {
-  if (event) {
-    event.stopPropagation()
-  }
-
-  if (!selectedService.value) return
-  
   try {
-    await axios.post('/api/service-actions', {
+    const response = await axios.post('/api/service-actions', {
       service_id: selectedService.value.id,
       action_type: actionType,
       quantity: quantity.value
     })
     
-    alert(`Service added to ${actionType.replace('_', ' ')}!`)
-    closeServiceDetails()
+    if (actionType === 'buy_now') {
+      router.push('/payment')
+    } else {
+      alert(`Service added to ${actionType.replace('_', ' ')}!`)
+      closeServiceDetails()
+    }
   } catch (error) {
     console.error('Action failed:', error)
-    alert('Failed to perform action')
+    alert(error.response?.data?.message || 'Failed to perform action')
   }
 }
 const registerContainerRef = (el, categoryId) => {
@@ -86,7 +84,7 @@ const registerContainerRef = (el, categoryId) => {
 
 <template>
 <body style="font-family: 'Poppins';">
-  <main style="padding-top: 1.5%;">
+  <main style="padding-top: 4.5%; padding-bottom: 3.5%; padding-left: 6.25%; padding-right: 8.75%;">
     <div v-if="isUser" id="dashboard-container">
       <div v-for="category in categories" :key="category.id" class="category-section">
         <div class="category-header">
@@ -142,7 +140,7 @@ const registerContainerRef = (el, categoryId) => {
             </div>
             
             <div class="detail-info">
-              <h2>{{ selectedService.name }}</h2>
+              <h3>{{ selectedService.name }}</h3>
               <div class="meta-info">
                 <span class="price">₹{{ selectedService.base_price }}</span>
                 <span class="duration">{{ selectedService.time_required }} mins</span>
@@ -166,13 +164,13 @@ const registerContainerRef = (el, categoryId) => {
               </div>
 
               <div class="action-buttons">
-                <button class="btn action-btn cart" @click.stop="handleServiceAction('cart', $event)">
+                <button class="btn action-btn cart2" @click.stop="handleServiceAction('cart', $event)">
                   <i class="fas fa-shopping-cart"></i> Add to Cart
                 </button>
-                <button class="btn action-btn wishlist" @click.stop="handleServiceAction('wishlist', $event)">
+                <button class="btn action-btn wishlist2" @click.stop="handleServiceAction('wishlist', $event)">
                   <i class="fas fa-heart"></i> Add to Wishlist
                 </button>
-                <button class="btn action-btn buy" @click.stop="handleServiceAction('buy_now', $event)">
+                <button class="btn action-btn buy2" @click.stop="handleServiceAction('buy_now', $event)">
                   <i class="fas fa-bolt"></i> Book Now
                 </button>
               </div>

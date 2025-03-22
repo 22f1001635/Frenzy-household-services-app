@@ -48,7 +48,7 @@
                 <img :src="userImage" alt="Profile" class="rounded-circle border border-3 border-light-subtle" style="width: 30px; height: 30px;">
                 <span class="d-none d-md-inline ms-1">{{ user?.username.split(' ')[0] }}</span>
               </router-link>
-              <div id="logout" style="padding-left: 1.25vw;"></div><button @click="logout" class="btn btn-outline-danger ms-2">Logout</button>
+              <div id="logout" style="padding-left: 1.25vw;"></div><button  @click="handleLogout" class="btn btn-outline-danger ms-2">Logout</button>
             </div>
             <!-- User is NOT logged in -->
             <div v-else class="d-flex align-items-center">
@@ -63,12 +63,15 @@
 </template>
 
 <script>
+
 import { useStore } from 'vuex';
 import { computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
 export default {
   setup() {
     const store = useStore();
+    const router = useRouter();
     
     // Using the correct getter names from your store
     const isLoggedIn = computed(() => store.getters.isAuthenticated);
@@ -80,12 +83,18 @@ export default {
       store.dispatch('fetchUser');
     });
     
+    // Logout handler
+    const handleLogout = async () => {
+      await store.dispatch('logout'); // Call the logout action
+      router.push('/'); // Redirect to home page
+    };
+    
     return {
       isLoggedIn,
       user,
       userImage,
-      logout: () => store.dispatch('logout')
+      handleLogout,
     };
   }
-}
+};
 </script>

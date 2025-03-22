@@ -248,6 +248,41 @@ const handleProfessionalRegistration = async (event) => {
     alert('Registration error. Please try again.');
   }
 };
+
+// Admin-specific functionality
+const blockEmail = ref('');
+const handleBlockUser = async (event) => {
+  event.preventDefault();
+  if (!blockEmail.value) return;
+
+  try {
+    const response = await fetch('/api/block-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email: blockEmail.value })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      alert(`User ${data.is_blocked ? 'blocked' : 'unblocked'} successfully`);
+      blockEmail.value = '';
+      document.getElementById('user-prof').style.display = 'none';
+    } else {
+      alert(data.message || 'Error updating user status');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error processing request');
+  }
+};
+
+// Professional status
+const professionalStatus = computed(() => {
+  if (!store.state.user) return '';
+  const status = store.state.user.verification_status;
+  return status.charAt(0).toUpperCase() + status.slice(1);
+});
 </script>
 <template>
 <body style="font-family: 'Poppins';">
@@ -278,61 +313,90 @@ const handleProfessionalRegistration = async (event) => {
           </form>
         </div>
 
-        <!-- Professional Registration Form -->
+        <!-- Role-based user-prof content -->
         <div id="user-prof" class="mt-3 pform" style="display: none;">
-          <p>Service Professional Registration</p>
-          <form @submit="handleProfessionalRegistration">
-            <div class="mb-2">
-              <label for="service-name" class="form-label">Service Name</label>
-              <select class="form-select" id="service-name" v-model="selectedServiceId" required>
-                <option value="" disabled>Select available services</option>
-                <option v-for="service in servicesList" :key="service.id" :value="service.id">
-                  {{ service.name }}
-                </option>
-              </select>
+          <!-- Admin View -->
+          <div v-if="store.state.user?.role === 'admin'" style="padding-top: 9vw;">
+            <p style="padding-left: 2vw;">Revoke Account Access</p>
+            <form @submit.prevent="handleBlockUser">
+              <div class="mb-2">
+                <label for="block-email" class="form-label">User Email</label>
+                <input type="email" class="form-control" id="block-email" v-model="blockEmail" required>
+              </div>
+              <div class="d-flex" style="padding-right: 4vw;">
+                <button type="submit" class="btn btn-danger">Block/Unblock</button>
+                <button type="button" class="btn btn-secondary" onclick="showForm('textarea')">Cancel</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Professional View -->
+          <div v-else-if="store.state.user?.role === 'professional'">
+            <p>Professional Status: {{ professionalStatus }}</p>
+            <div class="alert alert-success" v-if="store.state.user?.verification_status === 'verified'">
+              Your account is verified and active
             </div>
-            <div class="mb-2">
-              <label for="experience" class="form-label">Experience (in yrs)</label>
-              <input type="number" class="form-control" id="experience" v-model="experience" max="40" required>
+            <div class="alert alert-warning" v-else>
+              Verification pending. You can accept bookings once verified.
             </div>
-            <div class="mb-2">
-              <label for="phone-number" class="form-label">Phone Number</label>
-              <input type="tel" class="form-control" id="phone-number" v-model="phoneNumber" minlength="10" maxlength="13" required>
-            </div>
-            <div class="mb-2">
-              <label for="document" class="form-label">Upload verification documents (PDF)</label>
-              <input type="file" class="form-control" id="document" accept=".pdf" @change="handleFileChange">
-              <div v-if="documentError" class="text-danger small mt-1">{{ documentError }}</div>
-            </div>
-            <div class="form-group">
-              <label for="address">Address</label>
-              <div class="row">
-                <div class="col-md-12">
-                  <input type="text" class="form-control" id="address-line1" v-model="addressLine1" placeholder="House/Apartment" required>
+          </div>
+
+          <!-- User View (Registration Form) -->
+          <div v-else>
+            <p>Service Professional Registration</p>
+            <form @submit="handleProfessionalRegistration">
+              <div class="mb-2">
+                <label for="service-name" class="form-label">Service Name</label>
+                <select class="form-select" id="service-name" v-model="selectedServiceId" required>
+                  <option value="" disabled>Select available services</option>
+                  <option v-for="service in servicesList" :key="service.id" :value="service.id">
+                    {{ service.name }}
+                  </option>
+                </select>
+              </div>
+              <div class="mb-2">
+                <label for="experience" class="form-label">Experience (in yrs)</label>
+                <input type="number" class="form-control" id="experience" v-model="experience" max="40" required>
+              </div>
+              <div class="mb-2">
+                <label for="phone-number" class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="phone-number" v-model="phoneNumber" minlength="10" maxlength="13" required>
+              </div>
+              <div class="mb-2">
+                <label for="document" class="form-label">Upload verification documents (PDF)</label>
+                <input type="file" class="form-control" id="document" accept=".pdf" @change="handleFileChange">
+                <div v-if="documentError" class="text-danger small mt-1">{{ documentError }}</div>
+              </div>
+              <div class="form-group">
+                <label for="address">Address</label>
+                <div class="row">
+                  <div class="col-md-12">
+                    <input type="text" class="form-control" id="address-line1" v-model="addressLine1" placeholder="House/Apartment" required>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-md-12">
+                    <input type="text" class="form-control" id="address-line2" v-model="addressLine2" placeholder="Area/Street">
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-md-4">
+                    <input type="text" class="form-control" id="city" v-model="city" placeholder="City" required>
+                  </div>
+                  <div class="col-md-4">
+                    <input type="text" class="form-control" id="state" v-model="state" placeholder="State" required>
+                  </div>
+                  <div class="col-md-4">
+                    <input type="text" class="form-control" id="pincode" v-model="pincode" placeholder="Pincode" required>
+                  </div>
                 </div>
               </div>
-              <div class="row mt-2">
-                <div class="col-md-12">
-                  <input type="text" class="form-control" id="address-line2" v-model="addressLine2" placeholder="Area/Street">
-                </div>
+              <div class="d-flex gap-4">
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="button" class="btn btn-secondary" onclick="showForm('textarea')">Cancel</button>
               </div>
-              <div class="row mt-2">
-                <div class="col-md-4">
-                  <input type="text" class="form-control" id="city" v-model="city" placeholder="City" required>
-                </div>
-                <div class="col-md-4">
-                  <input type="text" class="form-control" id="state" v-model="state" placeholder="State" required>
-                </div>
-                <div class="col-md-4">
-                  <input type="text" class="form-control" id="pincode" v-model="pincode" placeholder="Pincode" required>
-                </div>
-              </div>
-            </div>
-            <div class="d-flex gap-4">
-              <button type="submit" class="btn btn-primary">Submit</button>
-              <button type="button" class="btn btn-secondary" onclick="showForm('textarea')">Cancel</button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
         <div id="user-content">
           <p id="header-wishlist">Active Orders</p>
@@ -399,15 +463,16 @@ const handleProfessionalRegistration = async (event) => {
           <p id="ori">{{ store.state.user?.phone_number || 'N/A' }}</p><hr>
         <p>User Type</p>
         <p id="ori">{{ store.state.user?.role }}</p><hr>
-        <div class="px-4">
-          <button v-if="store.state.user?.role === 'admin'" type="button" class="btn btn-sm btn-danger">Accept/Reject Professional Request</button>
-          <button v-else-if="store.state.user?.role === 'professional'" type="button" class="btn btn-sm btn-success">Professional Dashboard</button>
+        <div class="px-4 pt-2">
+          <button v-if="store.state.user?.role === 'admin'" type="button" class="btn btn-sm btn-danger px-5" onclick="showForm('user-prof')">Block/Unblock Account</button>
+          <button v-else-if="store.state.user?.role === 'professional'" type="button" class="btn btn-sm btn-success" onclick="showForm('user-prof')">Professional Dashboard</button>
           <button v-else-if="store.state.user?.role === 'user'" type="button" class="btn btn-sm btn-warning" onclick="showForm('user-prof')"><p id="ori">Are you a service professional?</p></button></div>
       </div>
     </div>
   </main>
 </body>
 </template>
+
 <style scoped>
 .upload-overlay {
   position: absolute;

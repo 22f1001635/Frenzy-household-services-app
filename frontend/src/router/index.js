@@ -1,104 +1,104 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import store from "../store"
-import home from '@/views/home.vue'
-import about from '@/views/aboutus.vue'
-import cart from '@/views/cart.vue'
-import address from '@/views/address.vue'
-import confirmorder from '@/views/confirmorder.vue'
-import contactus from '@/views/contactus.vue'
-import dashboard from '@/views/dashboard.vue'
-import payment from '@/views/payment.vue'
-import profile from '@/views/profile.vue'
-import review from '@/views/review.vue'
-import serviceedit from '@/views/serviceedit.vue'
-import service from '@/views/service.vue'
-import signin from '@/views/signin.vue'
-import signup from '@/views/signup.vue'
-import summary from '@/views/statistics.vue'
-import wishlist from '@/views/wishlist.vue'
-import test from '@/views/test.vue'
-import categorymanagement from '@/views/categorymanagement.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import store from "../store";
+import home from '@/views/home.vue';
+import about from '@/views/aboutus.vue';
+import cart from '@/views/cart.vue';
+import address from '@/views/address.vue';
+import confirmorder from '@/views/confirmorder.vue';
+import contactus from '@/views/contactus.vue';
+import dashboard from '@/views/dashboard.vue';
+import payment from '@/views/payment.vue';
+import profile from '@/views/profile.vue';
+import review from '@/views/review.vue';
+import serviceedit from '@/views/serviceedit.vue';
+import service from '@/views/service.vue';
+import signin from '@/views/signin.vue';
+import signup from '@/views/signup.vue';
+import summary from '@/views/statistics.vue';
+import wishlist from '@/views/wishlist.vue';
+import test from '@/views/test.vue';
+import categorymanagement from '@/views/categorymanagement.vue';
 
 const routes = [
   {
     path: '/',
     name: 'home',
     component: home,
-    meta:{
-      title:'Household Services -Frenzy',
-      description :'Home page of Frenzy the household services app'
+    meta: {
+      title: 'Household Services - Frenzy',
+      description: 'Home page of Frenzy the household services app'
     }
   },
   {
     path: '/about',
     name: 'about',
     component: about,
-    meta:{
-      title:'About Us -Frenzy',
-      description :'Explore how Frenzy the household app was incepted'
+    meta: {
+      title: 'About Us - Frenzy',
+      description: 'Explore how Frenzy the household app was incepted'
     }
   },
   {
     path: '/cart',
     name: 'cart',
     component: cart,
-    meta:{
-      title:'Services Cart',
-      description :'You are visiting your cart at frenzy'
+    meta: {
+      title: 'Services Cart',
+      description: 'You are visiting your cart at Frenzy'
     }
   },
   {
     path: '/address',
     name: 'address',
     component: address,
-    meta:{
-      title:'Cart-Address',
-      description :'you are providing your address for delivery of item in cart of your Frenzy account'
+    meta: {
+      title: 'Cart - Address',
+      description: 'You are providing your address for delivery of items in your Frenzy cart'
     }
   },
   {
     path: '/confirmorder',
     name: 'confirmorder',
     component: confirmorder,
-    meta:{
-      title:'Order Status',
-      description :'View order status for the order you placed at frenzy'
+    meta: {
+      title: 'Order Status',
+      description: 'View order status for the order you placed at Frenzy'
     }
   },
   {
     path: '/contactus',
     name: 'contactus',
     component: contactus,
-    meta:{
-      title:'Contact Us -Frenzy',
-      description :'You have reached the support/contact us page of frenzy! get your queries answered swiftly.'
+    meta: {
+      title: 'Contact Us - Frenzy',
+      description: 'You have reached the support/contact us page of Frenzy! Get your queries answered swiftly.'
     }
   },
   {
     path: '/dashboard',
     name: 'dashboard',
     component: dashboard,
-    meta:{
-      title:'Dashboard',
-      description :'You have reached your dashboard at frenzy'
+    meta: {
+      title: 'Dashboard',
+      description: 'You have reached your dashboard at Frenzy'
     }
   },
   {
     path: '/payment',
     name: 'payment',
     component: payment,
-    meta:{
-      title:'Cart-Payment',
-      description :'you are providing your payment details for delivery of item in cart of your Frenzy account'
+    meta: {
+      title: 'Cart - Payment',
+      description: 'You are providing your payment details for delivery of items in your Frenzy cart'
     }
   },
   {
     path: '/profile',
     name: 'profile',
     component: profile,
-    meta:{
-      title:'Profile',
-      description :'View your profile,previous order and items in your wishlist at frenzy',
+    meta: {
+      title: 'Profile',
+      description: 'View your profile, previous orders, and items in your wishlist at Frenzy',
       requiresAuth: true
     }
   },
@@ -106,18 +106,18 @@ const routes = [
     path: '/review',
     name: 'review',
     component: review,
-    meta:{
-      title:'Order Review',
-      description :'please provide review for the order you placed with us!'
+    meta: {
+      title: 'Order Review',
+      description: 'Please provide a review for the order you placed with us!'
     }
   },
   {
     path: '/serviceedit',
     name: 'serviceedit',
     component: serviceedit,
-    meta:{
-      title:'Edit existing service',
-      description :'provide scruitny for existing service such as price,name change,etc.',
+    meta: {
+      title: 'Edit Existing Service',
+      description: 'Provide scrutiny for existing services such as price, name change, etc.',
       requiresAdmin: true
     }
   },
@@ -125,9 +125,9 @@ const routes = [
     path: '/categorymanagement',
     name: 'categorymanagement',
     component: categorymanagement,
-    meta:{
-      title:'Manage Service Categories',
-      description :'provide scruitny for serivice categories such as add,delete,etc.',
+    meta: {
+      title: 'Manage Service Categories',
+      description: 'Provide scrutiny for service categories such as add, delete, etc.',
       requiresAdmin: true
     }
   },
@@ -135,9 +135,9 @@ const routes = [
     path: '/service',
     name: 'service',
     component: service,
-    meta:{
-      title:'Add a new service',
-      description :'provide details for addition of new service to the frenzy app',
+    meta: {
+      title: 'Add a New Service',
+      description: 'Provide details for the addition of a new service to the Frenzy app',
       requiresAdmin: true
     }
   },
@@ -145,9 +145,9 @@ const routes = [
     path: '/signin',
     name: 'signin',
     component: signin,
-    meta:{
-      title:'Signin -Frenzy',
-      description :'login to your existing account in the frenzy app',
+    meta: {
+      title: 'Sign In - Frenzy',
+      description: 'Log in to your existing account in the Frenzy app',
       requiresGuest: true
     }
   },
@@ -155,9 +155,9 @@ const routes = [
     path: '/signup',
     name: 'signup',
     component: signup,
-    meta:{
-      title:'Signup -Frenzy',
-      description :'Register a new account in the frenzy app',
+    meta: {
+      title: 'Sign Up - Frenzy',
+      description: 'Register a new account in the Frenzy app',
       requiresGuest: true
     }
   },
@@ -165,18 +165,18 @@ const routes = [
     path: '/statistics',
     name: 'statistics',
     component: summary,
-    meta:{
-      title:'view statistics -Frenzy',
-      description :'View your statistics regarding order,etc at frenzy'
+    meta: {
+      title: 'View Statistics - Frenzy',
+      description: 'View your statistics regarding orders, etc. at Frenzy'
     }
   },
   {
     path: '/wishlist',
     name: 'wishlist',
     component: wishlist,
-    meta:{
-      title:'Services Wishlist',
-      description :'You are visiting your wishlist at frenzy'
+    meta: {
+      title: 'Services Wishlist',
+      description: 'You are visiting your wishlist at Frenzy'
     }
   },
   {
@@ -184,16 +184,16 @@ const routes = [
     name: 'test',
     component: test
   }
-]
-
+];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
-})
+});
 
 router.beforeEach(async (to) => {
-  if (store.state.user === null) { // Only fetch if not already loaded
+  // Fetch user if not already loaded
+  if (store.state.user === null) {
     await store.dispatch('fetchUser');
   }
 
@@ -201,6 +201,14 @@ router.beforeEach(async (to) => {
   const isAuthenticated = store.getters.isAuthenticated;
   const isAdmin = store.getters.isAdmin;
 
+  // Check if the user is blocked
+  if (user?.is_blocked) {
+    await store.dispatch('logout');
+    alert('Your account has been blocked. Please contact support.');
+    return { path: '/' };
+  }
+
+  // Handle route guards
   if (to.meta.requiresAuth && !isAuthenticated) {
     return { path: '/signin' };
   }
@@ -217,7 +225,6 @@ router.beforeEach(async (to) => {
 });
 
 router.afterEach((to) => {
-  
   const { title, description } = to.meta;
   const defaultTitle = 'Frenzy';
   const defaultDescription = 'The household services app';

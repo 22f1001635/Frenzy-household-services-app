@@ -31,32 +31,30 @@ def signin():
 
     # Validate input presence
     if not email or not password:
+        return jsonify({'message': 'Email and password are required'}), 400
+
+    user = User.query.filter_by(email=email).first()
+
+    # Check if user is blocked
+    if user and user.is_blocked:
+        return jsonify({'message': 'Your account has been blocked. Please contact support.'}), 403
+
+    # Check if user exists and password is correct
+    if user and user.check_password(password):
+        login_user(user)
+        session.permanent = False
         return jsonify({
-            'message': 'Email and password are required'
-        }), 400
-        
-    else:
-        # Query user from database
-        user = User.query.filter_by(email=email).first()
-        
-        # Check if user exists and password is correct
-        if user and user.check_password(password):
-            login_user(user)
-            session.permanent = False
-            print(current_user)
-            return jsonify({
             'message': 'Login successful',
             'user': {
                 'id': user.id,
                 'email': user.email,
                 'username': user.username,
-                'role': user.role  
-            }}), 200
-        
-        # Invalid credentials
-        return jsonify({
-            'message': 'Invalid email or password'
-        }), 401
+                'role': user.role,
+                'is_blocked': user.is_blocked 
+            }
+        }), 200
+
+    return jsonify({'message': 'Invalid email or password'}), 401
     
 @app.route('/api/signup', methods=['POST'])
 def register():
@@ -190,12 +188,18 @@ def serve_profile_picture(filename):
 @app.route('/api/current_user', methods=['GET'])
 @login_required
 def current_user_info():
+    # Check if the user is blocked
+    if current_user.is_blocked:
+        logout_user()
+        return jsonify({'message': 'Your account has been blocked. Please contact support.'}), 403
+
     user_data = {
         'id': current_user.id,
         'email': current_user.email,
         'username': current_user.username,
         'role': current_user.role,
-        'image_file': current_user.image_file
+        'image_file': current_user.image_file,
+        'is_blocked': current_user.is_blocked 
     }
 
     # Fetch default address for phone number
@@ -203,7 +207,7 @@ def current_user_info():
         user_id=current_user.id,
         is_default=True
     ).first()
-    
+
     if default_address:
         user_data['phone_number'] = default_address.phone_number
         user_data['address'] = {
@@ -215,7 +219,7 @@ def current_user_info():
             'pincode': default_address.pincode,
             'is_default': default_address.is_default
         }
-    
+
     return jsonify({'user': user_data}), 200
 
 @app.route('/api/logout')
@@ -898,3 +902,37 @@ def get_addresses():
         "phone_number": addr.phone_number,
         "is_default": addr.is_default
     } for addr in addresses])
+
+@app.route('/api/block-user', methods=['POST'])
+@admin_required
+@login_required
+def block_user():
+    data = request.json
+    email = data.get('email')
+
+    if not email:
+        return jsonify({'message': 'Email is required'}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    # Prevent blocking admins
+    if user.role == 'admin':
+        return jsonify({'message': 'Admins cannot be blocked'}), 400
+
+    if user.id == current_user.id:
+        return jsonify({'message': 'Cannot block yourself'}), 400
+
+    user.is_blocked = not user.is_blocked
+    db.session.commit()
+
+    # If the user is blocked, log them out immediately
+    if user.is_blocked:
+        logout_user()
+
+    return jsonify({
+        'message': 'User status updated',
+        'is_blocked': user.is_blocked,
+        'email': user.email
+    }), 200

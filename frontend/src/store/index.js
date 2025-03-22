@@ -16,6 +16,11 @@ export default createStore({
     async fetchUser({ commit }) {
       try {
         const response = await fetch('/api/current_user');
+        if (response.status === 403) {
+          commit('logout');
+          alert('Your account has been blocked. Please contact support.');
+          return;
+        }
         if (response.status === 401) {
           commit('setUser', null);
           return;
@@ -32,6 +37,8 @@ export default createStore({
         await fetch('/api/logout');
         commit('logout');
         alert('You have been logged out');
+        // Redirect to home page after logout
+        window.location.href = '/'; // Use this for a full page reload
       } catch (error) {
         console.error('Error during logout:', error);
       }

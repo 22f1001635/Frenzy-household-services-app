@@ -84,7 +84,7 @@
         border-radius: 8%/10%;       
         margin: 1vw;
     }
-    h4{
+    h4,h6{
         position: relative;
         top: 47.5%;
         left: 10%;
@@ -93,6 +93,9 @@
         width: 250px;
         word-wrap: break-word;
         overflow-wrap: break-word;
+    }
+    h6{
+        margin: 0.75vw;
     }
     .btn-warning,#quantity{
         height: 3vw ;
@@ -148,6 +151,7 @@
 .address-items{
     height: 7.5vw;
     margin: 0.5vw;
+    margin-left: 7.5vw;
 }
 #newAddressSection>a,#savedAddressSection>a{
     position: relative;
@@ -155,7 +159,6 @@
     font-size: 0.9vw;
     text-decoration: none;
     color:coral;
-    opacity: 60%; 
 }
 #newAddressSection>a:hover,#savedAddressSection>a:hover{
     opacity: 100%;
@@ -178,7 +181,6 @@
 }
 label{
     font-size: 0.8vw !important;
-    opacity: 0.5 !important;
 }
 .new{
     form{

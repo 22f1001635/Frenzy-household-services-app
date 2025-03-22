@@ -1,5 +1,5 @@
 <script setup>
-import { ref,onMounted,computed } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useStore } from 'vuex';
 import axios from 'axios';
 
@@ -117,10 +117,9 @@ const handleFileUpload = async (event) => {
 const servicesList = ref([]);
 const selectedServiceId = ref('');
 const experience = ref('');
-const contactNumber = ref('');
-const houseNo = ref('');
-const area = ref('');
-const landmark = ref('');
+const phoneNumber = ref(''); // Updated: Use phoneNumber instead of contactNumber
+const addressLine1 = ref('');
+const addressLine2 = ref('');
 const city = ref('');
 const state = ref('');
 const pincode = ref('');
@@ -177,7 +176,7 @@ const handleProfessionalRegistration = async (event) => {
   event.preventDefault();
   
   // Form validation - check all required fields
-  if (!selectedServiceId.value || !experience.value || !contactNumber.value || !pincode.value) {
+  if (!selectedServiceId.value || !experience.value || !phoneNumber.value || !pincode.value) {
     alert('Please fill all required fields');
     return;
   }
@@ -188,31 +187,22 @@ const handleProfessionalRegistration = async (event) => {
     return;
   }
   
-  // Validate contact number has proper format
-  if (contactNumber.value.length < 10) {
-    alert('Please enter a valid contact number');
-    return;
+  // Validate phone number has proper format
+  if (phoneNumber.value.length < 10 || phoneNumber.value.length > 13) {
+    alert('Please enter a valid phone number (10-13 digits)');
   }
-  
-  // Build address only from fields that have values
-  const addressParts = [];
-  if (houseNo.value) addressParts.push(houseNo.value);
-  if (area.value) addressParts.push(area.value);
-  if (landmark.value) addressParts.push(landmark.value);
-  if (city.value) addressParts.push(city.value);
-  if (state.value) addressParts.push(state.value);
-  
-  // Join with commas, but ensure we have at least something
-  const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : "Address not provided";
 
   try {
     // Use FormData instead of JSON for file uploads
     const formData = new FormData();
     formData.append('service_id', selectedServiceId.value);
     formData.append('experience', experience.value);
-    formData.append('contact_number', contactNumber.value);
-    formData.append('address', fullAddress);
-    formData.append('pin_code', pincode.value);
+    formData.append('phone_number', phoneNumber.value); // Updated: Use phoneNumber
+    formData.append('address_line1', addressLine1.value);
+    formData.append('address_line2', addressLine2.value);
+    formData.append('city', city.value);
+    formData.append('state', state.value);
+    formData.append('pincode', pincode.value);
     
     // Append file if selected
     if (documentFile.value) {
@@ -237,10 +227,9 @@ const handleProfessionalRegistration = async (event) => {
       // Reset form fields
       selectedServiceId.value = '';
       experience.value = '';
-      contactNumber.value = '';
-      houseNo.value = '';
-      area.value = '';
-      landmark.value = '';
+      phoneNumber.value = '';
+      addressLine1.value = '';
+      addressLine2.value = '';
       city.value = '';
       state.value = '';
       pincode.value = '';
@@ -252,6 +241,7 @@ const handleProfessionalRegistration = async (event) => {
     } else {
       alert(`Registration failed: ${data.message || 'Unknown error'}`);
       console.error('Server response:', data);
+      document.getElementById('document').value = '';
     }
   } catch (error) {
     console.error('Error during professional registration:', error);
@@ -262,170 +252,173 @@ const handleProfessionalRegistration = async (event) => {
 <template>
 <body style="font-family: 'Poppins';">
   <main style="padding-top:2.75%;">
-          <div id="graph4">
-            <div class="outline">
-              <div id="change-password" class="mt-5 pform" style="display: none;">
-                <p>Change Password</p>
-                <form @submit="handleChangePassword">
-                  <div class="mb-3 pt-4">
-                    <label for="current-password" class="form-label">Current Password</label>
-                    <input type="password" class="form-control" id="current-password" required v-model="currentPassword">
-                  </div>
-                  <div class="mb-3">
-                    <label for="new-password" class="form-label">New Password</label>
-                    <input type="password" class="form-control" id="new-password" required 
-                          minlength="8" 
-                          title="Password must be at least 8 characters long" v-model="newPassword">
-                  </div>
-                  <div class="mb-3">
-                    <label for="confirm-password" class="form-label">Confirm Password</label>
-                    <input type="password" class="form-control" id="confirm-password" required v-model="confirmPassword">
-                  </div>
-                  <div class="d-flex gap-4">
-                    <button type="submit" class="btn btn-success">Submit</button>
-                    <button type="button" class="btn btn-secondary" onclick="showForm('textarea')">Cancel</button>
-                  </div>
-                </form>
-              </div>
-              <div id="user-prof" class="mt-3 pform" style="display: none;">
-              <p>Service Professional Registration</p>
-              <form @submit="handleProfessionalRegistration">
-                <div class="mb-2">
-                  <label for="service-name" class="form-label">Service Name</label>
-                  <select class="form-select" id="service-name" v-model="selectedServiceId" required>
-                    <option value="" disabled>Select available services</option>
-                    <option v-for="service in servicesList" :key="service.id" :value="service.id">
-                      {{ service.name }}
-                    </option>
-                  </select>
-                </div>
-                <div class="mb-2">
-                  <label for="experience" class="form-label">Experience (in yrs)</label>
-                  <input type="number" class="form-control" id="experience" v-model="experience" max="40" required>
-                </div>
-                <div class="mb-2">
-                  <label for="mobile" class="form-label">Contact Number</label>
-                  <input type="tel" class="form-control" id="mobile" v-model="contactNumber" maxlength="13" required>
-                </div>
-                <div class="mb-2">
-                  <label for="document" class="form-label">Upload verification documents (PDF)</label>
-                  <input type="file" class="form-control" id="document" accept=".pdf" @change="handleFileChange">
-                  <div v-if="documentError" class="text-danger small mt-1">{{ documentError }}</div>
-                </div>
-                <div class="form-group">
-                  <label for="address">Address</label>
-                  <div class="row">
-                    <div class="col-md-12">
-                      <input type="text" class="form-control" id="house-no" v-model="houseNo" placeholder="House No., Apartment">
-                    </div>
-                  </div>
-                  <div class="row mt-2">
-                    <div class="col-md-6">
-                      <input type="text" class="form-control" id="area-street-village" v-model="area" placeholder="Area/Street/Village">
-                    </div>
-                    <div class="col-md-6">
-                      <input type="text" class="form-control" id="landmark" v-model="landmark" placeholder="Landmark">
-                    </div>
-                  </div>
-                  <div class="row mt-2">
-                    <div class="col-md-4">
-                      <input type="text" class="form-control" id="city" v-model="city" placeholder="City">
-                    </div>
-                    <div class="col-md-4">
-                      <input type="text" class="form-control" id="state" v-model="state" placeholder="State">
-                    </div>
-                    <div class="col-md-4">
-                      <input type="text" class="form-control" id="pincode" v-model="pincode" placeholder="Pincode">
-                    </div>
-                  </div>
-                </div>
-                <div class="d-flex gap-4">
-                  <button type="submit" class="btn btn-primary">Submit</button>
-                  <button type="button" class="btn btn-secondary" onclick="showForm('textarea')">Cancel</button>
-                </div>
-              </form>
+    <div id="graph4">
+      <div class="outline">
+        <div id="change-password" class="mt-5 pform" style="display: none;">
+          <p>Change Password</p>
+          <form @submit="handleChangePassword">
+            <div class="mb-3 pt-4">
+              <label for="current-password" class="form-label">Current Password</label>
+              <input type="password" class="form-control" id="current-password" required v-model="currentPassword">
             </div>
-                <div id="user-content">
-                  <p id="header-wishlist">Active Orders</p>
-                  <div id="wishlist-container">
-                    <button id="prev-btn" class="nav-arrow" style="display: none;">
-                      <i class="fa-solid fa-chevron-left"></i>
-                    </button>
-                    <div class="wishlist-items-wrapper d-flex gap-3">
-                      <div id="wishlist-item">
-                        <div id="wishlist-item-image">
-
-                        </div>
-                        <p id="item-name">Saksham Sirohi Ji</p>
-                        <div class="d-flex gap-4 px-3">
-                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                        <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
-                        </div>
-                      </div>
-                    </div>
-                    <button id="next-btn" class="nav-arrow">
-                      <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-                  </div>
-                  <p id="header-previous" style="padding-top: 0vw;">Previously Ordered</p>
-                  <div id="previous-container">
-                    <button id="prev-btn" class="nav-arrow" style="display: none;">
-                      <i class="fa-solid fa-chevron-left"></i>
-                    </button>
-                    <div class="previous-items-wrapper d-flex gap-3">
-                      <div id="previous-item">
-                        <div id="previous-item-image">
-
-                        </div>
-                        <p id="item-name">Saksham Sirohi Ji</p>
-                        <div class="d-flex gap-4 px-3">
-                        <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                        <button type="button" class="btn btn-secondary"><i class="fa-duotone fa-solid fa-pencil fa-lg"></i></button>
-                        </div>
-                      </div>
-                    </div>
-                    <button id="next-btn" class="nav-arrow">
-                      <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-                  </div>
-                </div>
+            <div class="mb-3">
+              <label for="new-password" class="form-label">New Password</label>
+              <input type="password" class="form-control" id="new-password" required 
+                    minlength="8" 
+                    title="Password must be at least 8 characters long" v-model="newPassword">
             </div>
+            <div class="mb-3">
+              <label for="confirm-password" class="form-label">Confirm Password</label>
+              <input type="password" class="form-control" id="confirm-password" required v-model="confirmPassword">
+            </div>
+            <div class="d-flex gap-4">
+              <button type="submit" class="btn btn-success">Submit</button>
+              <button type="button" class="btn btn-secondary" onclick="showForm('textarea')">Cancel</button>
+            </div>
+          </form>
         </div>
-        <div id="graph5">
-          <div id="prof">
-            <div id="pic"> <img :src="profilePictureUrl" @click="handleImageClick" draggable="false" style="cursor: pointer;">
-            <input type="file" id="profile-upload" hidden accept="image/jpeg, image/png, image/jpg" @change="handleFileUpload">
-            <div v-if="isUploading" class="upload-overlay">Uploading...</div>
-            <button class="btn btn-warning" style="border-radius: 50%;" onclick="showForm('change-password')"><i class="fa-solid fa-key"></i></button></div>
-            <div id="ori"><div id="name">{{ store.state.user?.username }}</div></div>
-            <p>Email</p>
-            <p id="ori">{{ store.state.user?.email }}</p><hr>
-            <p>Address</p>
-            <p id="ori">{{ store.state.user?.address || 'No address provided' }}</p><hr>
-            <p>Contact Number</p>
-            <p id="ori">{{ store.state.user?.contact_number || 'N/A' }}</p><hr>
-            <p>User Type</p>
-            <p id="ori">{{ store.state.user?.role }}</p><hr>
-            <div class="px-4">
-            <button v-if="store.state.user?.role === 'admin'" type="button" class="btn btn-sm btn-danger">Accept/Reject Professional Request</button>
-            <button v-else-if="store.state.user?.role === 'professional'" type="button" class="btn btn-sm btn-success">Professional Dashboard</button>
-            <button v-else-if="store.state.user?.role === 'user'" type="button" class="btn btn-sm btn-warning" onclick="showForm('user-prof')"><p id="ori">Are you a service professional?</p></button></div>
+
+        <!-- Professional Registration Form -->
+        <div id="user-prof" class="mt-3 pform" style="display: none;">
+          <p>Service Professional Registration</p>
+          <form @submit="handleProfessionalRegistration">
+            <div class="mb-2">
+              <label for="service-name" class="form-label">Service Name</label>
+              <select class="form-select" id="service-name" v-model="selectedServiceId" required>
+                <option value="" disabled>Select available services</option>
+                <option v-for="service in servicesList" :key="service.id" :value="service.id">
+                  {{ service.name }}
+                </option>
+              </select>
+            </div>
+            <div class="mb-2">
+              <label for="experience" class="form-label">Experience (in yrs)</label>
+              <input type="number" class="form-control" id="experience" v-model="experience" max="40" required>
+            </div>
+            <div class="mb-2">
+              <label for="phone-number" class="form-label">Phone Number</label>
+              <input type="tel" class="form-control" id="phone-number" v-model="phoneNumber" minlength="10" maxlength="13" required>
+            </div>
+            <div class="mb-2">
+              <label for="document" class="form-label">Upload verification documents (PDF)</label>
+              <input type="file" class="form-control" id="document" accept=".pdf" @change="handleFileChange">
+              <div v-if="documentError" class="text-danger small mt-1">{{ documentError }}</div>
+            </div>
+            <div class="form-group">
+              <label for="address">Address</label>
+              <div class="row">
+                <div class="col-md-12">
+                  <input type="text" class="form-control" id="address-line1" v-model="addressLine1" placeholder="House/Apartment" required>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-12">
+                  <input type="text" class="form-control" id="address-line2" v-model="addressLine2" placeholder="Area/Street">
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-4">
+                  <input type="text" class="form-control" id="city" v-model="city" placeholder="City" required>
+                </div>
+                <div class="col-md-4">
+                  <input type="text" class="form-control" id="state" v-model="state" placeholder="State" required>
+                </div>
+                <div class="col-md-4">
+                  <input type="text" class="form-control" id="pincode" v-model="pincode" placeholder="Pincode" required>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex gap-4">
+              <button type="submit" class="btn btn-primary">Submit</button>
+              <button type="button" class="btn btn-secondary" onclick="showForm('textarea')">Cancel</button>
+            </div>
+          </form>
+        </div>
+        <div id="user-content">
+          <p id="header-wishlist">Active Orders</p>
+          <div id="wishlist-container">
+            <button id="prev-btn" class="nav-arrow" style="display: none;">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="wishlist-items-wrapper d-flex gap-3">
+              <div id="wishlist-item">
+                <div id="wishlist-item-image"></div>
+                <p id="item-name">Saksham Sirohi Ji</p>
+                <div class="d-flex gap-4 px-3">
+                  <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
+                  <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
+                </div>
+              </div>
+            </div>
+            <button id="next-btn" class="nav-arrow">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+          <p id="header-previous" style="padding-top: 0vw;">Previously Ordered</p>
+          <div id="previous-container">
+            <button id="prev-btn" class="nav-arrow" style="display: none;">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="previous-items-wrapper d-flex gap-3">
+              <div id="previous-item">
+                <div id="previous-item-image"></div>
+                <p id="item-name">Saksham Sirohi Ji</p>
+                <div class="d-flex gap-4 px-3">
+                  <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
+                  <button type="button" class="btn btn-secondary"><i class="fa-duotone fa-solid fa-pencil fa-lg"></i></button>
+                </div>
+              </div>
+            </div>
+            <button id="next-btn" class="nav-arrow">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
           </div>
         </div>
-    </main>
+      </div>
+    </div>
+    <div id="graph5">
+      <div id="prof">
+        <div id="pic">
+          <img :src="profilePictureUrl" @click="handleImageClick" draggable="false" style="cursor: pointer;">
+          <input type="file" id="profile-upload" hidden accept="image/jpeg, image/png, image/jpg" @change="handleFileUpload">
+          <div v-if="isUploading" class="upload-overlay">Uploading...</div>
+          <button class="btn btn-warning" style="border-radius: 50%;" onclick="showForm('change-password')"><i class="fa-solid fa-key"></i></button></div>
+        <div id="ori"><div id="name">{{ store.state.user?.username }}</div></div>
+        <p>Email</p>
+        <p id="ori">{{ store.state.user?.email }}</p><hr>
+        <p>Address</p>
+          <p id="ori" v-if="store.state.user?.address">
+            {{ store.state.user.address.address_line1 }},
+            {{ store.state.user.address.address_line2 }},
+            {{ store.state.user.address.city }}, 
+            {{ store.state.user.address.state }},
+            {{ store.state.user.address.pincode }}
+          </p>
+          <p v-else id="ori">No address provided</p><hr>
+          <p>Contact Number</p>
+          <p id="ori">{{ store.state.user?.phone_number || 'N/A' }}</p><hr>
+        <p>User Type</p>
+        <p id="ori">{{ store.state.user?.role }}</p><hr>
+        <div class="px-4">
+          <button v-if="store.state.user?.role === 'admin'" type="button" class="btn btn-sm btn-danger">Accept/Reject Professional Request</button>
+          <button v-else-if="store.state.user?.role === 'professional'" type="button" class="btn btn-sm btn-success">Professional Dashboard</button>
+          <button v-else-if="store.state.user?.role === 'user'" type="button" class="btn btn-sm btn-warning" onclick="showForm('user-prof')"><p id="ori">Are you a service professional?</p></button></div>
+      </div>
+    </div>
+  </main>
 </body>
 </template>
 <style scoped>
 .upload-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.5);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

@@ -3,6 +3,7 @@ from flask import Flask,jsonify,request,session,send_from_directory
 from functools import wraps
 from werkzeug.utils import secure_filename
 import os,secrets
+import uuid
 
 @app.before_request
 def make_session_temporary():
@@ -190,21 +191,30 @@ def serve_profile_picture(filename):
 @login_required
 def current_user_info():
     user_data = {
-            'id': current_user.id,
-            'email': current_user.email,
-            'username': current_user.username,
-            'role': current_user.role,    
-            'image_file': current_user.image_file
+        'id': current_user.id,
+        'email': current_user.email,
+        'username': current_user.username,
+        'role': current_user.role,
+        'image_file': current_user.image_file
     }
-    # Add customer-specific fields
-    if current_user.role == 'customer':
-        customer = Customer.query.get(current_user.id)
-        if customer:
-            user_data.update({
-                'address': customer.address,
-                'pin_code': customer.pin_code,
-                'phone_number': customer.phone_number
-            })
+
+    # Fetch default address for phone number
+    default_address = Address.query.filter_by(
+        user_id=current_user.id,
+        is_default=True
+    ).first()
+    
+    if default_address:
+        user_data['phone_number'] = default_address.phone_number
+        user_data['address'] = {
+            'id': default_address.id,
+            'address_line1': default_address.address_line1,
+            'address_line2': default_address.address_line2,
+            'city': default_address.city,
+            'state': default_address.state,
+            'pincode': default_address.pincode,
+            'is_default': default_address.is_default
+        }
     
     return jsonify({'user': user_data}), 200
 
@@ -663,7 +673,7 @@ def register_professional():
         # Get JSON data from form data instead of request.json
         data = request.form.to_dict()
         
-        required_fields = ['service_id', 'experience', 'contact_number', 'pin_code']
+        required_fields = ['service_id', 'experience', 'phone_number', 'pincode']
 
         # Validate input for required fields
         missing_fields = [field for field in required_fields if field not in data]
@@ -672,8 +682,8 @@ def register_professional():
 
         if current_user.role != 'user':
             return jsonify({'message': 'Already a professional/admin'}), 400
-        if len(data.get('contact_number', '')) > 13:
-            return jsonify({'message': 'Contact number too long'}), 400
+        if len(data.get('phone_number')) > 13:
+            return jsonify({'message': 'Phone number too long'}), 400
 
         # File validation if file is uploaded
         if has_file:
@@ -692,30 +702,30 @@ def register_professional():
             if file_size > MAX_FILE_SIZE:
                 return jsonify({'message': 'File size exceeds 20MB limit'}), 400
 
-        # Address handling
-        address_value = data.get('address')
-        if not address_value or not isinstance(address_value, str):
-            address_value = "Address not provided"
-
-        # Handle Customer data - Check if exists with a direct query to avoid ORM issues
-        customer_exists = db.session.query(db.exists().where(Customer.id == user.id)).scalar()
-
-        if not customer_exists:
-            # Insert into customers table
-            stmt = db.insert(Customer.__table__).values(
-                id=user.id,
-                address=address_value,
-                phone_number=data.get('contact_number', ''),
-                pin_code=data.get('pin_code', '')
-            )
-            db.session.execute(stmt)
+        # Handle Address data instead of Customer data
+        # Check if the user already has an address
+        existing_address = Address.query.filter_by(user_id=user.id, is_default=True).first()
+        
+        address_data = {
+            'user_id': user.id,
+            'address_line1': data.get('address_line1'),
+            'address_line2': data.get('address_line2'),
+            'city': data.get('city'),
+            'state': data.get('state'),
+            'pincode': data.get('pincode'),
+            'phone_number': data.get('phone_number'),
+            'is_default': True
+        }
+        
+        if existing_address:
+            # Update existing address
+            for key, value in address_data.items():
+                if key != 'user_id':  # Don't update user_id
+                    setattr(existing_address, key, value)
         else:
-            # Get the existing customer to update (Minimal Fix Applied Here)
-            customer = db.session.query(Customer).filter_by(id=user.id).first()
-            if customer:
-                customer.address = address_value
-                customer.phone_number = data.get('contact_number', '')
-                customer.pin_code = data.get('pin_code', '')
+            # Create new address
+            new_address = Address(**address_data)
+            db.session.add(new_address)
 
         # Handle Professional data
         service_id = int(data.get('service_id')) if str(data.get('service_id', '')).isdigit() else None
@@ -730,7 +740,7 @@ def register_professional():
                 id=user.id,
                 experience=experience_value,
                 service_type=service_id,
-                contact_number=data.get('contact_number', ''),
+                contact_number=data.get('phone_number', ''),
                 verification_status='pending'
             )
             db.session.execute(stmt)
@@ -740,7 +750,7 @@ def register_professional():
             if professional:
                 professional.experience = experience_value
                 professional.service_type = service_id
-                professional.contact_number = data.get('contact_number', '')
+                professional.contact_number = data.get('phone_number', '')
                 professional.verification_status = 'pending'
 
         # Handle file upload if a file was provided
@@ -748,7 +758,6 @@ def register_professional():
             document_file = request.files['document']
             
             # Generate a secure filename
-            import uuid
             secure_filename = f"{uuid.uuid4()}_{document_file.filename}"
             
             # Save file to upload folder
@@ -830,3 +839,62 @@ def update_service_action(action_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': str(e)}), 500
+    
+@app.route('/api/addresses', methods=['POST'])
+@login_required
+def add_address():
+    data = request.json
+    required_fields = ["address_line1", "address_line2", "city", "state", "pincode", "phone_number"]
+    
+    # Validate fields
+    if not all(field in data for field in required_fields):
+        return jsonify({"message": "Missing required fields"}), 400
+
+    # Unset existing default address if needed
+    if data.get("is_default"):
+        Address.query.filter_by(user_id=current_user.id).update({"is_default": False})
+
+    new_address = Address(
+        user_id=current_user.id,
+        phone_number=data["phone_number"],
+        address_line1=data["address_line1"],
+        address_line2=data.get("address_line2", ""),
+        city=data["city"],
+        state=data["state"],
+        pincode=data["pincode"],
+        is_default=data.get("is_default", False)
+    )
+    db.session.add(new_address)
+    try:
+        db.session.commit()
+        return jsonify({
+            "message": "Address added",
+            "address": {
+                "id": new_address.id,
+                "address_line1": new_address.address_line1,
+                "address_line2": new_address.address_line2,
+                "city": new_address.city,
+                "state": new_address.state,
+                "pincode": new_address.pincode,
+                "phone_number": new_address.phone_number,
+                "is_default": new_address.is_default
+            }
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Error adding address", "error": str(e)}), 500
+    
+@app.route('/api/addresses', methods=['GET'])
+@login_required
+def get_addresses():
+    addresses = Address.query.filter_by(user_id=current_user.id).all()
+    return jsonify([{
+        "id": addr.id,
+        "address_line1": addr.address_line1,
+        "address_line2": addr.address_line2,
+        "city": addr.city,
+        "state": addr.state,
+        "pincode": addr.pincode,
+        "phone_number": addr.phone_number,
+        "is_default": addr.is_default
+    } for addr in addresses])

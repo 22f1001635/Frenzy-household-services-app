@@ -31,12 +31,12 @@ class User(db.Model, UserMixin):
         return True, ""
 
 class PaymentMethod(db.Model):
-    """Payment Method model for storing customer payment information"""
+    """Payment Method model for storing user payment information"""
     __tablename__ = 'payment_methods'
     
     id = db.Column(db.Integer, primary_key=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False)
-    method_type = db.Column(db.String(20), nullable=False)  # credit_card, upi, bank_account
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    method_type = db.Column(db.String(20), nullable=False)
     is_default = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -96,32 +96,20 @@ class ProfessionalDocument(db.Model):
     verified_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     verified_at = db.Column(db.DateTime)
 
-class Customer(User):
-    """Customer model inheriting from User"""
-    __tablename__ = 'customers'
+class Address(db.Model):
+    """Address model for storing user addresses"""
+    __tablename__ = 'addresses'
     
-    id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    address = db.Column(db.Text)
-    pin_code = db.Column(db.String(10))
-    phone_number = db.Column(db.String(15))
-    
-    # Relationships
-    service_requests = db.relationship('ServiceRequest', backref='customer', lazy=True)
-    reviews = db.relationship('Review', backref='customer', lazy=True)
-    payment_methods = db.relationship('PaymentMethod', backref='customer', lazy=True,
-                                    cascade='all, delete-orphan')
-    
-    def get_default_payment_method(self):
-        return PaymentMethod.query.filter_by(
-            customer_id=self.id,
-            is_default=True,
-            is_active=True
-        ).first()
-
-    # Explicit inheritance configuration
-    __mapper_args__ = {
-        'polymorphic_identity': 'customer'
-    }
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Updated: customer_id → user_id
+    address_line1 = db.Column(db.String(255), nullable=False)
+    address_line2 = db.Column(db.String(255))
+    city = db.Column(db.String(100), nullable=False)
+    state = db.Column(db.String(100), nullable=False)
+    pincode = db.Column(db.String(10), nullable=False)
+    phone_number = db.Column(db.String(15))  # Added field
+    is_default = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class ServiceCategory(db.Model):
     """Model for service categories"""
@@ -155,8 +143,7 @@ class Service(db.Model):
     
     # Relationships
     service_requests = db.relationship('ServiceRequest', backref='service', lazy=True)
-    locations = db.relationship('ServiceLocation', backref='service', lazy=True,
-                              cascade='all, delete-orphan')
+    locations = db.relationship('ServiceLocation', backref='service', lazy=True, cascade='all, delete-orphan')
 
 class ServiceLocation(db.Model):
     """Model for storing service area pin codes"""
@@ -179,7 +166,7 @@ class ServiceRequest(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     service_id = db.Column(db.Integer, db.ForeignKey('services.id'), nullable=False)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     professional_id = db.Column(db.Integer, db.ForeignKey('professionals.id'))
     request_date = db.Column(db.DateTime, default=datetime.utcnow)
     scheduled_date = db.Column(db.DateTime, nullable=False)
@@ -195,13 +182,13 @@ class ServiceRequest(db.Model):
     payment = db.relationship('Payment', backref='service_request', uselist=False)
 
 class Review(db.Model):
-    """Review model for storing customer reviews and ratings"""
+    """Review model for storing user reviews and ratings"""
     __tablename__ = 'reviews'
     
     id = db.Column(db.Integer, primary_key=True)
     service_request_id = db.Column(db.Integer, db.ForeignKey('service_requests.id'), nullable=False)
     professional_id = db.Column(db.Integer, db.ForeignKey('professionals.id'), nullable=False)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.Text)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)

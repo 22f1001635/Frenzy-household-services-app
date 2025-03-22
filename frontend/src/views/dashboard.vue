@@ -11,6 +11,7 @@ const servicesByCategory = ref({})
 const selectedService = ref(null)
 const quantity = ref(1)
 const serviceContainers = ref({})
+const hasServices = ref(false)
 
 const isUser = computed(() => store.state.user?.role === 'user')
 
@@ -25,6 +26,9 @@ onMounted(async () => {
     
     categories.value = categoriesRes.data
     const allServices = servicesRes.data
+    
+    // Check if there are any services available
+    hasServices.value = allServices.length > 0
     
     categories.value.forEach(category => {
       servicesByCategory.value[category.id] = allServices.filter(
@@ -67,7 +71,7 @@ const handleServiceAction = async (actionType, event) => {
     })
     
     if (actionType === 'buy_now') {
-      router.push('/payment')
+      router.push('/address')
     } else {
       const message = actionType === 'cart' && response.data.new_quantity 
         ? `Quantity updated to ${response.data.new_quantity}`
@@ -80,7 +84,7 @@ const handleServiceAction = async (actionType, event) => {
     if (error.response?.data?.error_type === 'duplicate') {
       if (actionType === 'buy_now') {
         // Redirect to payment if duplicate buy_now action
-        router.push('/payment')
+        router.push('/address')
       } else {
         alert(error.response.data.message)
       }
@@ -101,6 +105,11 @@ const registerContainerRef = (el, categoryId) => {
 <body style="font-family: 'Poppins';">
   <main style="padding-top: 4.5%; padding-bottom: 3.5%; padding-left: 6.25%; padding-right: 8.75%;">
     <div v-if="isUser" id="dashboard-container">
+      <!-- No services message - global -->
+      <div v-if="!hasServices" class="no-services-message">
+        <h3>No services available currently</h3>
+      </div>
+      
       <div v-for="category in categories" :key="category.id" class="category-section">
         <div class="category-header">
           <h2 class="category-title">{{ category.name }}</h2>
@@ -115,7 +124,14 @@ const registerContainerRef = (el, categoryId) => {
         </div>
         
         <div class="services-carousel">
+          <!-- No services message for this category -->
+          <p v-if="!servicesByCategory[category.id] || servicesByCategory[category.id].length === 0" 
+             class="no-services-category">
+            No services available in this category currently
+          </p>
+          
           <div 
+            v-else
             class="services-wrapper"
             :ref="el => registerContainerRef(el, category.id)"
           >
@@ -203,3 +219,22 @@ const registerContainerRef = (el, categoryId) => {
   </main>
 </body>
 </template>
+
+<style scoped>
+.no-services-message {
+  text-align: center;
+  padding: 30px;
+  border-radius: 8px;
+  margin: 20px 0;
+  opacity: 0.3;
+}
+
+.no-services-category {
+  text-align: center;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 10px 0;
+  font-style: italic;
+  color: #666;
+}
+</style>

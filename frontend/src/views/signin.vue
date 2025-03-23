@@ -77,7 +77,7 @@ const handleSubmit = async (event) => {
                 </form>
                 <div class="border-top pt-2">
                     <p class="text-dark-muted opacity-75">
-                        Don't have an account? <a href="#">Sign Up</a>
+                        Don't have an account? <router-link to="/signup">Sign Up</router-link>
                     </p>
                 </div>
             </div>

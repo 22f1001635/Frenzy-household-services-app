@@ -6,17 +6,7 @@ import "@/assets/styles/main.css"
 <body style="font-family: 'Poppins';">
   <main style="padding-top:2.75%;">
         <div>
-          <div id="maintext"><h1>Home Services</h1><h3>at your doorstep!</h3></div>
-          <div id="products">
-            <div class="d-flex">
-            <div id="womenspa"></div>
-            <div id="menmassage"></div>
-            <div id="acappliance"></div></div>
-            <div id="pestcontrol"></div>
-            <div id="carpenter"></div>
-            <div id="painting"></div>
-            <div id="cleaning"></div>
-          </div>
+          <div id="maintext"><p>Home Services</p><p id="sm">at your doorstep!</p></div>
           <div id="images">
             <div id="carouselExampleAutoplaying" class="carousel slide-fade" data-bs-ride="carousel" data-bs-interval="2250" data-bs-wrap="true" data-bs-touch="false" data-bs-pause="false">
               <div class="carousel-inner">

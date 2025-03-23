@@ -13,15 +13,13 @@ import "@/assets/styles/main.css"
             <br>
             <br>
             <h3>Email</h3>
-            <p></p>
-            <a href=""><h6>support@frenzy.com</h6></a>
-            <br>
+            <a href="mailto:support@frenzy.com"><h6 style="padding-top: 0.5vw;">support@frenzy.com</h6></a>
             <br>
             <h3>Socials</h3>
             <br>
-            <a href="#"><h6>Twitter</h6></a>
-            <a href="#"><h6>Instagram</h6></a>
-            <a href="#"><h6>Facebook</h6></a>
+            <a href="https://twitter.com/frenzy" target="_blank"><h6>Twitter</h6></a>
+            <a href="https://instagram.com/frenzy" target="_blank"><h6>Instagram</h6></a>
+            <a href="https://facebook.com/frenzy" target="_blank"><h6>Facebook</h6></a>
             <br>
           </div>
           <div id="form-contact">
@@ -47,7 +45,7 @@ import "@/assets/styles/main.css"
               </div>
               <div class="form-group pb-3">
                 <label for="exampleFormControlTextarea1">Message</label>
-                <textarea class="form-control" id="exampleFormControlTextarea1" rows="5" placeholder="Provide necessary details for the project such as budget,type of service,etc."></textarea>
+                <textarea class="form-control" id="exampleFormControlTextarea1" rows="5" placeholder="Please provide necessary details as without them you will get a request termination and will need to re-request using right information in order to get any action"></textarea>
               </div>
               <div class="form-group">
                 <div class="d-grid gap-2 col-6 mx-auto pt-2">

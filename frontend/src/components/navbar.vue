@@ -21,7 +21,7 @@
             <router-link class="nav-link" :class="{ active: $route.path === '/contactus' }" to="/contactus">Contact Us</router-link>
           </li>
         </ul>
-        <div class="find">
+        <div class="find" v-if="isLoggedIn">
           <div class="search-container me-2">
             <input class="form-control" type="search" placeholder="Search" id="searchInput">
             <div class="search-modal" id="searchModal">

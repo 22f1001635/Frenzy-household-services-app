@@ -7,9 +7,15 @@ const store = useStore();
 
 import "@/assets/styles/main.css"
 import "@/assets/styles/statistics.css"
+
 onMounted(() => {
     window.dispatchEvent(new CustomEvent('vue-component-itemwrap'));
     window.dispatchEvent(new CustomEvent('vue-component-search'));
+
+    // Fetch pending professional applications if the user is an admin
+    if (store.state.user?.role === 'admin') {
+        fetchPendingApplications();
+    }
 });
 
 const currentPassword = ref('');
@@ -117,7 +123,7 @@ const handleFileUpload = async (event) => {
 const servicesList = ref([]);
 const selectedServiceId = ref('');
 const experience = ref('');
-const phoneNumber = ref(''); // Updated: Use phoneNumber instead of contactNumber
+const phoneNumber = ref('');
 const addressLine1 = ref('');
 const addressLine2 = ref('');
 const city = ref('');
@@ -197,7 +203,7 @@ const handleProfessionalRegistration = async (event) => {
     const formData = new FormData();
     formData.append('service_id', selectedServiceId.value);
     formData.append('experience', experience.value);
-    formData.append('phone_number', phoneNumber.value); // Updated: Use phoneNumber
+    formData.append('phone_number', phoneNumber.value);
     formData.append('address_line1', addressLine1.value);
     formData.append('address_line2', addressLine2.value);
     formData.append('city', city.value);
@@ -279,11 +285,69 @@ const handleBlockUser = async (event) => {
 
 // Professional status
 const professionalStatus = computed(() => {
-  if (!store.state.user) return '';
-  const status = store.state.user.verification_status;
+  const status = store.state.user?.verification_status || 'not_applied';
   return status.charAt(0).toUpperCase() + status.slice(1);
 });
+
+// Professional Applications Management
+const professionalApplications = ref([]);
+
+// Fetch pending professional applications
+const fetchPendingApplications = async () => {
+  try {
+    const response = await fetch('/api/pending-professionals');
+    if (!response.ok) throw new Error('Failed to fetch applications');
+    professionalApplications.value = await response.json();
+  } catch (error) {
+    console.error('Error fetching applications:', error);
+    alert('Failed to load applications');
+  }
+};
+
+// Handle document viewing
+const handleViewDocument = (documentUrl) => {
+  window.open(`http://localhost:5000/documents/${documentUrl}`, '_blank');
+};
+
+// Handle application approval
+const handleAccept = async (applicationId) => {
+  try {
+    const response = await fetch(`/api/update-professional-status/${applicationId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'verified' })
+    });
+    
+    if (response.ok) {
+      professionalApplications.value = professionalApplications.value.filter(app => app.id !== applicationId);
+      alert('Application approved');
+    }
+  } catch (error) {
+    console.error('Approval error:', error);
+    alert('Error approving application');
+  }
+};
+
+// Handle application rejection
+const handleReject = async (applicationId) => {
+  try {
+    const response = await fetch(`/api/update-professional-status/${applicationId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'rejected' })
+    });
+    
+    if (response.ok) {
+      professionalApplications.value = professionalApplications.value.filter(app => app.id !== applicationId);
+      alert('Application rejected');
+    }
+  } catch (error) {
+    console.error('Rejection error:', error);
+    alert('Error rejecting application');
+  }
+};
 </script>
+
 <template>
 <body style="font-family: 'Poppins';">
   <main style="padding-top:2.75%;">
@@ -398,44 +462,76 @@ const professionalStatus = computed(() => {
             </form>
           </div>
         </div>
+
+        <!-- User Content Section -->
         <div id="user-content">
-          <p id="header-wishlist">Active Orders</p>
-          <div id="wishlist-container">
-            <button id="prev-btn" class="nav-arrow" style="display: none;">
-              <i class="fa-solid fa-chevron-left"></i>
-            </button>
-            <div class="wishlist-items-wrapper d-flex gap-3">
-              <div id="wishlist-item">
-                <div id="wishlist-item-image"></div>
-                <p id="item-name">Saksham Sirohi Ji</p>
-                <div class="d-flex gap-4 px-3">
-                  <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                  <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
+          <!-- Admin View -->
+          <div v-if="store.state.user?.role === 'admin'">
+            <p id="header-wishlist">Professional Applications</p>
+            <div id="wishlist-container">
+              <div class="wishlist-items-wrapper d-flex gap-3">
+                <div v-for="app in professionalApplications" :key="app.id" class="application-card">
+                  <div class="application-details">
+                    <p><strong>Username:</strong> {{ app.username }}</p>
+                    <p><strong>Experience:</strong> {{ app.experience }} years</p>
+                    <p><strong>Service:</strong> {{ app.service_name }}</p>
+                  </div>
+                  <div class="d-flex gap-2 px-3">
+                    <button @click="handleViewDocument(app.document_url)" class="btn btn-info">
+                      <i class="fa-solid fa-file"></i>
+                    </button>
+                    <button @click="handleAccept(app.id)" class="btn btn-success">
+                      <i class="fa-solid fa-check"></i>
+                    </button>
+                    <button @click="handleReject(app.id)" class="btn btn-danger">
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-            <button id="next-btn" class="nav-arrow">
-              <i class="fa-solid fa-chevron-right"></i>
-            </button>
           </div>
-          <p id="header-previous" style="padding-top: 0vw;">Previously Ordered</p>
-          <div id="previous-container">
-            <button id="prev-btn" class="nav-arrow" style="display: none;">
-              <i class="fa-solid fa-chevron-left"></i>
-            </button>
-            <div class="previous-items-wrapper d-flex gap-3">
-              <div id="previous-item">
-                <div id="previous-item-image"></div>
-                <p id="item-name">Saksham Sirohi Ji</p>
-                <div class="d-flex gap-4 px-3">
-                  <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                  <button type="button" class="btn btn-secondary"><i class="fa-duotone fa-solid fa-pencil fa-lg"></i></button>
+
+          <!-- User View -->
+          <div v-else>
+            <p id="header-wishlist">Active Orders</p>
+            <div id="wishlist-container">
+              <button id="prev-btn" class="nav-arrow" style="display: none;">
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <div class="wishlist-items-wrapper d-flex gap-3">
+                <div id="wishlist-item">
+                  <div id="wishlist-item-image"></div>
+                  <p id="item-name">Saksham Sirohi Ji</p>
+                  <div class="d-flex gap-4 px-3">
+                    <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
+                    <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
+                  </div>
                 </div>
               </div>
+              <button id="next-btn" class="nav-arrow">
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
             </div>
-            <button id="next-btn" class="nav-arrow">
-              <i class="fa-solid fa-chevron-right"></i>
-            </button>
+            <p id="header-previous" style="padding-top: 0vw;">Previously Ordered</p>
+            <div id="previous-container">
+              <button id="prev-btn" class="nav-arrow" style="display: none;">
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <div class="previous-items-wrapper d-flex gap-3">
+                <div id="previous-item">
+                  <div id="previous-item-image"></div>
+                  <p id="item-name">Saksham Sirohi Ji</p>
+                  <div class="d-flex gap-4 px-3">
+                    <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
+                    <button type="button" class="btn btn-secondary"><i class="fa-duotone fa-solid fa-pencil fa-lg"></i></button>
+                  </div>
+                </div>
+              </div>
+              <button id="next-btn" class="nav-arrow">
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -485,5 +581,25 @@ const professionalStatus = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.application-card {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.application-details {
+  flex-grow: 1;
+  margin-right: 2rem;
+}
+
+.application-details p {
+  margin: 0.5rem 0;
 }
 </style>

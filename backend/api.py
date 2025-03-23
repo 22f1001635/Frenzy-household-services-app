@@ -202,6 +202,11 @@ def current_user_info():
         'is_blocked': current_user.is_blocked 
     }
 
+    if current_user.role in ['professional', 'user']:
+        professional = Professional.query.get(current_user.id)
+        if professional:
+            user_data['verification_status'] = professional.verification_status
+
     # Fetch default address for phone number
     default_address = Address.query.filter_by(
         user_id=current_user.id,
@@ -745,7 +750,9 @@ def register_professional():
                 experience=experience_value,
                 service_type=service_id,
                 contact_number=data.get('phone_number', ''),
-                verification_status='pending'
+                verification_status='pending',
+                is_available=True,
+                rating=3.0
             )
             db.session.execute(stmt)
         else:
@@ -756,6 +763,8 @@ def register_professional():
                 professional.service_type = service_id
                 professional.contact_number = data.get('phone_number', '')
                 professional.verification_status = 'pending'
+                professional.is_available = True
+                professional.rating = 3.0
 
         # Handle file upload if a file was provided
         if has_file:
@@ -793,7 +802,9 @@ def register_professional():
                     professional_id=user.id,
                     document_type='.pdf',
                     document_url=secure_filename,
-                    is_verified=False
+                    is_verified=False,
+                    verified_by=None,
+                    verified_at=None
                 )
                 db.session.add(new_document)
 
@@ -803,7 +814,7 @@ def register_professional():
         
     except Exception as e:
         db.session.rollback()
-        print(f"Error in registration: {str(e)}")  # Add detailed logging
+        print(f"Error in registration: {str(e)}")
         return jsonify({'message': f'Registration failed: {str(e)}'}), 500
 
 @app.route('/api/service-actions/<action_type>', methods=['GET'])
@@ -936,3 +947,67 @@ def block_user():
         'is_blocked': user.is_blocked,
         'email': user.email
     }), 200
+
+@app.route('/api/pending-professionals', methods=['GET'])
+@admin_required
+def get_pending_professionals():
+    pending_pros = Professional.query.filter_by(verification_status='pending').all()
+    result = []
+    
+    for pro in pending_pros:
+        user = User.query.get(pro.id)
+        service = Service.query.get(pro.service_type)
+        document = ProfessionalDocument.query.filter_by(professional_id=pro.id).first()
+        
+        result.append({
+            'id': pro.id,
+            'username': user.username,
+            'experience': pro.experience,
+            'service_name': service.name if service else 'N/A',
+            'document_url': document.document_url if document else None,
+            'is_available': pro.is_available,  # Include availability status
+            'rating': pro.rating,  # Include rating
+            'document_verified': document.is_verified if document else False,
+            'verified_by': document.verified_by if document else None,
+            'verified_at': document.verified_at.isoformat() if document and document.verified_at else None
+        })
+    
+    return jsonify(result), 200
+
+@app.route('/api/update-professional-status/<int:pro_id>', methods=['PATCH'])
+@admin_required
+def update_professional_status(pro_id):
+    data = request.json
+    new_status = data.get('status')
+    
+    if new_status not in ['verified', 'rejected']:
+        return jsonify({'message': 'Invalid status'}), 400
+    
+    professional = Professional.query.get_or_404(pro_id)
+    professional.verification_status = new_status
+    professional.verification_date = datetime.utcnow()
+    professional.verified_by = current_user.id
+    
+    # Update ProfessionalDocument if the status is 'verified'
+    if new_status == 'verified':
+        user = User.query.get(pro_id)
+        user.role = 'professional'
+        
+        # Update the associated ProfessionalDocument
+        document = ProfessionalDocument.query.filter_by(professional_id=pro_id).first()
+        if document:
+            document.is_verified = True
+            document.verified_by = current_user.id
+            document.verified_at = datetime.utcnow()
+    
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Status updated successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': str(e)}), 500
+
+@app.route('/documents/<filename>')
+@admin_required
+def serve_document(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)

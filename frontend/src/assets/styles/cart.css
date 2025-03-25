@@ -218,6 +218,23 @@ label{
     font-size: 0.9vw;
     overflow: auto;
 }
+.detailer {
+    height: 14.5vw;
+    width: 50vw;
+    padding: 1vw;
+    padding-top: 1vw;
+    padding-bottom: 1vw;
+    margin: 1.5vw;
+    margin-top: 1.5vw;
+    margin-top: 0.4vw;
+    padding-top: 0.20vw;
+    padding-bottom: 0.25vw;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    border-radius: 2%/3%;
+    font-weight: 550;
+    font-size: 0.9vw;
+    overflow: auto;
+  }
 .star-rating {
     display: flex;
     flex-direction: column;

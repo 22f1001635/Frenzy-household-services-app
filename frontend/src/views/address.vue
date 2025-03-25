@@ -1,7 +1,7 @@
 <script setup>
 import "@/assets/styles/main.css"
 import "@/assets/styles/cart.css"
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
@@ -11,15 +11,58 @@ const router = useRouter();
 const savedAddresses = ref([]);
 const showNewAddress = ref(false);
 const selectedAddressId = ref(null);
+const selectedDate = ref('');
+const selectedTime = ref('');
+const timeSlots = ref([
+  '9:00 AM', '11:00 AM', '1:00 PM', '3:00 PM', '5:00 PM'
+]);
+
 const formData = ref({
     address_line1: '',
     address_line2: '',
     city: '',
     state: '',
     pincode: '',
-    phone_number: '', // Added phone_number
+    phone_number: '',
     is_default: false
 });
+
+// Compute min date (today) and max date (30 days from now)
+const minDate = computed(() => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+});
+
+const maxDate = computed(() => {
+  const futureDate = new Date();
+  futureDate.setDate(futureDate.getDate() + 30);
+  return futureDate.toISOString().split('T')[0];
+});
+
+// Check if selected date is valid (at least 2 hours from now)
+const isValidDate = computed(() => {
+  if (!selectedDate.value || !selectedTime.value) return false;
+  
+  const now = new Date();
+  const selectedDateTime = new Date(`${selectedDate.value}T${convertTo24Hour(selectedTime.value)}`);
+  
+  // Minimum 2 hours in the future
+  const minDateTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+  
+  return selectedDateTime >= minDateTime;
+});
+
+// Helper to convert time to 24-hour format
+const convertTo24Hour = (timeStr) => {
+  const [time, modifier] = timeStr.split(' ');
+  let [hours, minutes] = time.split(':');
+  
+  if (modifier === 'PM' && hours !== '12') {
+    hours = parseInt(hours, 10) + 12;
+  }
+  
+  return `${hours}:${minutes}:00`;
+};
 
 // Fetch addresses on component mount
 onMounted(async () => {
@@ -31,13 +74,11 @@ onMounted(async () => {
         return;
     }
     
-    // Redirect professionals to their profile
     if (user.role === 'professional') {
         router.push('/profile');
         return;
     }
 
-    // Fetch saved addresses for the user
     try {
         const response = await axios.get('/api/addresses', { withCredentials: true });
         savedAddresses.value = response.data;
@@ -47,17 +88,15 @@ onMounted(async () => {
     }
 });
 
-// Toggle between saved addresses and new address form
 const toggleSection = () => {
     showNewAddress.value = !showNewAddress.value;
 };
 
-// Submit a new address
 const submitAddress = async () => {
     try {
         const response = await axios.post('/api/addresses', formData.value, { withCredentials: true });
         if (response.status === 201) {
-            savedAddresses.value.push(response.data);
+            savedAddresses.value.push(response.data.address);
             toggleSection();
             formData.value = { address_line1: '', address_line2: '', city: '', state: '', pincode: '', phone_number: '', is_default: false };
             alert('Address saved successfully!');
@@ -68,18 +107,34 @@ const submitAddress = async () => {
     }
 };
 
-// Handle address selection for payment
 const handleAddressSelection = (addressId) => {
     selectedAddressId.value = addressId;
 };
 
-// Proceed to payment with the selected address
 const proceedToPayment = () => {
     if (!selectedAddressId.value) {
         alert('Please select an address');
         return;
     }
-    router.push(`/payment?addressId=${selectedAddressId.value}`);
+    
+    if (!selectedDate.value || !selectedTime.value) {
+        alert('Please select a date and time slot');
+        return;
+    }
+    
+    if (!isValidDate.value) {
+        alert('Please select a time slot at least 2 hours from now if not available pick next day');
+        return;
+    }
+    
+    router.push({
+        path: '/payment',
+        query: {
+            addressId: selectedAddressId.value,
+            serviceDate: selectedDate.value,
+            serviceTime: selectedTime.value
+        }
+    });
 };
 </script>
 
@@ -195,29 +250,28 @@ const proceedToPayment = () => {
           <!-- Date and Time Picker -->
           <div class="date-slot">
             <label for="service-date" class="opacity-100"><h5>Service Date</h5></label><br>
-            <div id="datepicker"><input type="date" name="service-date"></div>
+            <div id="datepicker">
+              <input 
+                type="date" 
+                name="service-date" 
+                v-model="selectedDate"
+                :min="minDate"
+                :max="maxDate"
+                required
+              >
+            </div>
           </div>
-          <div class="time-slot">
+          <div class="time-slot" v-if="selectedDate">
             <h5>Select Service Slot</h5>
-            <label>
-              <input type="radio" name="slot">
-              9:00 AM
-            </label>
-            <label>
-              <input type="radio" name="slot">
-              11:00 AM
-            </label>
-            <label>
-              <input type="radio" name="slot">
-              1:00 PM
-            </label>
-            <label>
-              <input type="radio" name="slot">
-              3:00 PM
-            </label>
-            <label>
-              <input type="radio" name="slot">
-              5:00 PM
+            <label v-for="slot in timeSlots" :key="slot">
+              <input 
+                type="radio" 
+                name="slot" 
+                :value="slot"
+                v-model="selectedTime"
+                required
+              >
+              {{ slot }}
             </label>
           </div>
           <button type="button" class="btn btn-dark" @click="proceedToPayment">
@@ -230,3 +284,17 @@ const proceedToPayment = () => {
 </main>
 </body>
 </template>
+
+<style scoped>
+.alert-warning {
+  margin: 15px 0;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.time-slot label {
+  display: inline-block;
+  margin-right: 15px;
+  margin-bottom: 5px;
+}
+</style>

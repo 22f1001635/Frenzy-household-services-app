@@ -57,13 +57,14 @@ const routes = [
     }
   },
   {
-    path: '/confirmorder',
-    name: 'confirmorder',
-    component: confirmorder,
-    meta: {
-      title: 'Order Status',
-      description: 'View order status for the order you placed at Frenzy'
-    }
+      path: '/confirmorder',
+      name: 'confirmorder',
+      component: confirmorder,
+      meta: {
+        title: 'Order Confirmation',
+        description: 'View your order confirmation details',
+        requiresAuth: true
+      }
   },
   {
     path: '/contactus',

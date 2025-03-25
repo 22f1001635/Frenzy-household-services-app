@@ -39,21 +39,15 @@ class PaymentMethod(db.Model):
     method_type = db.Column(db.String(20), nullable=False)
     is_default = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    last_used = db.Column(db.DateTime)
     
-    # For Credit Cards (encrypted in production)
-    card_last_four = db.Column(db.String(4))
-    card_brand = db.Column(db.String(20))
-    card_expiry = db.Column(db.String(7))
+    # For Credit Cards
+    card_number = db.Column(db.String(16),nullable=True)
+    card_cvv = db.Column(db.String(4),nullable=True)
+    card_expiry = db.Column(db.String(7),nullable=True)
     
     # For UPI
-    upi_id = db.Column(db.String(50))
-    
-    # For Bank Accounts
-    bank_name = db.Column(db.String(100))
-    account_last_four = db.Column(db.String(4))
-    
+    upi_id = db.Column(db.String(20),nullable=True)
+
     # Relationships
     payments = db.relationship('Payment', backref='payment_method', lazy=True)
 
@@ -169,6 +163,7 @@ class ServiceRequest(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     professional_id = db.Column(db.Integer, db.ForeignKey('professionals.id'))
     request_date = db.Column(db.DateTime, default=datetime.utcnow)
+    order_group_id = db.Column(db.String(36))
     scheduled_date = db.Column(db.DateTime, nullable=False)
     completion_date = db.Column(db.DateTime)
     status = db.Column(db.String(20), default='requested')

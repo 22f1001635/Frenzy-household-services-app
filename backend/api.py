@@ -837,23 +837,50 @@ def get_service_actions(action_type):
         }
     } for action in actions])
 
-@app.route('/api/service-actions/<int:action_id>', methods=['PATCH'])
+@app.route('/api/service-actions/<int:action_id>', methods=['PATCH', 'DELETE'])
 @login_required
 def update_service_action(action_id):
     action = UserServiceAction.query.get_or_404(action_id)
+    
+    # Verify the action belongs to the current user
     if action.user_id != current_user.id:
         return jsonify({'message': 'Unauthorized'}), 403
 
-    data = request.json
-    if 'quantity' in data:
-        action.quantity = data['quantity']
-    
-    try:
-        db.session.commit()
-        return jsonify({'message': 'Quantity updated'})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'message': str(e)}), 500
+    if request.method == 'PATCH':
+        # Handle quantity updates
+        data = request.json
+        if 'quantity' in data:
+            try:
+                quantity = int(data['quantity'])
+                if quantity < 1:
+                    return jsonify({'message': 'Quantity must be at least 1'}), 400
+                
+                action.quantity = quantity
+                db.session.commit()
+                return jsonify({
+                    'message': 'Quantity updated successfully',
+                    'new_quantity': action.quantity
+                })
+            except ValueError:
+                return jsonify({'message': 'Invalid quantity value'}), 400
+        else:
+            return jsonify({'message': 'No quantity provided'}), 400
+
+    elif request.method == 'DELETE':
+        # Handle item removal
+        try:
+            db.session.delete(action)
+            db.session.commit()
+            return jsonify({
+                'message': 'Item removed from cart successfully',
+                'removed_item_id': action_id
+            })
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({
+                'message': 'Failed to remove item from cart',
+                'error': str(e)
+            }), 500
     
 @app.route('/api/addresses', methods=['POST'])
 @login_required
@@ -1011,3 +1038,146 @@ def update_professional_status(pro_id):
 @admin_required
 def serve_document(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/api/payment-methods', methods=['GET'])
+@login_required
+def get_payment_methods():
+    methods = PaymentMethod.query.filter_by(
+        user_id=current_user.id,
+        is_active=True
+    ).all()
+    
+    return jsonify([{
+        'id': m.id,
+        'method_type': m.method_type,
+        'upi_id': m.upi_id,
+        'card_last_four': m.card_last_four,
+        'card_brand': m.card_brand,
+        'is_default': m.is_default
+    } for m in methods])
+
+@app.route('/api/process-payment', methods=['POST'])
+@login_required
+def process_payment():
+    data = request.json
+    try:
+        with db.session.begin():
+            service_requests = []
+            total_amount = 0
+
+            if 'service_id' in data:  # Buy Now flow
+                service = Service.query.get_or_404(data['service_id'])
+                quantity = int(data.get('quantity', 1))
+                
+                professional = Professional.query.filter_by(
+                    service_type=service.id,
+                    is_available=True,
+                    verification_status='verified'
+                ).first()
+
+                service_request = ServiceRequest(
+                    user_id=current_user.id,
+                    service_id=service.id,
+                    professional_id=professional.id if professional else None,
+                    scheduled_date=datetime.strptime(
+                        f"{data['service_date']} {data['service_time']}", 
+                        '%Y-%m-%d %H:%M:%S'
+                    ),
+                    status='confirmed',
+                    location_pin=Address.query.get(data['address_id']).pincode,
+                    total_amount=service.base_price * quantity
+                )
+                db.session.add(service_request)
+                service_requests.append(service_request)
+                total_amount = service.base_price * quantity
+
+            else:  # Cart flow
+                cart_items = db.session.query(
+                    UserServiceAction,
+                    Service
+                ).join(Service).filter(
+                    UserServiceAction.user_id == current_user.id,
+                    UserServiceAction.action_type == 'cart',
+                    UserServiceAction.is_active == True
+                ).all()
+                
+                for cart_item, service in cart_items:
+                    professional = Professional.query.filter_by(
+                        service_type=service.id,
+                        is_available=True,
+                        verification_status='verified'
+                    ).first()
+                    
+                    service_request = ServiceRequest(
+                        user_id=current_user.id,
+                        service_id=service.id,
+                        professional_id=professional.id if professional else None,
+                        scheduled_date=datetime.strptime(
+                            f"{data['service_date']} {data['service_time']}", 
+                            '%Y-%m-%d %H:%M:%S'
+                        ),
+                        status='confirmed',
+                        location_pin=Address.query.get(data['address_id']).pincode,
+                        total_amount=service.base_price * cart_item.quantity
+                    )
+                    db.session.add(service_request)
+                    service_requests.append(service_request)
+                    total_amount += service.base_price * cart_item.quantity
+
+            # Create payment
+            payment = Payment(
+                service_request_id=service_requests[0].id,
+                payment_method_id=data.get('payment_method_id'),
+                amount=total_amount,
+                status='success',
+                transaction_id=str(uuid.uuid4())
+            )
+            db.session.add(payment)
+
+            # Clear cart only if not buy-now
+            if 'service_id' not in data:
+                for cart_item, _ in (cart_items if cart_items else []):
+                    db.session.delete(cart_item)
+
+            db.session.commit()
+            return jsonify({'success': True, 'orderId': service_requests[0].id})
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/orders/<int:order_id>', methods=['GET'])
+@login_required
+def get_order_details(order_id):
+    order = ServiceRequest.query.get_or_404(order_id)
+    
+    if order.user_id != current_user.id and current_user.role != 'admin':
+        return jsonify({'message': 'Unauthorized'}), 403
+    
+    items = UserServiceAction.query.filter(
+        UserServiceAction.user_id == current_user.id,
+        UserServiceAction.action_type == 'cart',
+        UserServiceAction.is_active == False
+    ).join(Service).all()
+    
+    total = sum(item.service.base_price * item.quantity for item in items)
+    
+    return jsonify({
+        'order': {
+            'id': order.id,
+            'status': order.status,
+            'scheduled_date': order.scheduled_date.isoformat(),
+            'total_amount': order.total_amount
+        },
+        'items': [{
+            'id': item.id,
+            'quantity': item.quantity,
+            'service': {
+                'id': item.service.id,
+                'name': item.service.name,
+                'base_price': item.service.base_price
+            }
+        } for item in items],
+        'total': total
+    })

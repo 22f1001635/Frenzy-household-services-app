@@ -1039,114 +1039,6 @@ def update_professional_status(pro_id):
 def serve_document(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-@app.route('/api/payment-methods', methods=['GET'])
-@login_required
-def get_payment_methods():
-    methods = PaymentMethod.query.filter_by(
-        user_id=current_user.id,
-        is_active=True
-    ).all()
-    
-    return jsonify([{
-        'id': m.id,
-        'method_type': m.method_type,
-        'upi_id': m.upi_id,
-        'card_last_four': m.card_last_four,
-        'card_brand': m.card_brand,
-        'is_default': m.is_default
-    } for m in methods])
-
-@app.route('/api/process-payment', methods=['POST'])
-@login_required
-def process_payment():
-    data = request.json
-    try:
-        with db.session.begin():
-            service_requests = []
-            total_amount = 0
-
-            if 'service_id' in data:  # Buy Now flow
-                service = Service.query.get_or_404(data['service_id'])
-                quantity = int(data.get('quantity', 1))
-                
-                professional = Professional.query.filter_by(
-                    service_type=service.id,
-                    is_available=True,
-                    verification_status='verified'
-                ).first()
-
-                service_request = ServiceRequest(
-                    user_id=current_user.id,
-                    service_id=service.id,
-                    professional_id=professional.id if professional else None,
-                    scheduled_date=datetime.strptime(
-                        f"{data['service_date']} {data['service_time']}", 
-                        '%Y-%m-%d %H:%M:%S'
-                    ),
-                    status='confirmed',
-                    location_pin=Address.query.get(data['address_id']).pincode,
-                    total_amount=service.base_price * quantity
-                )
-                db.session.add(service_request)
-                service_requests.append(service_request)
-                total_amount = service.base_price * quantity
-
-            else:  # Cart flow
-                cart_items = db.session.query(
-                    UserServiceAction,
-                    Service
-                ).join(Service).filter(
-                    UserServiceAction.user_id == current_user.id,
-                    UserServiceAction.action_type == 'cart',
-                    UserServiceAction.is_active == True
-                ).all()
-                
-                for cart_item, service in cart_items:
-                    professional = Professional.query.filter_by(
-                        service_type=service.id,
-                        is_available=True,
-                        verification_status='verified'
-                    ).first()
-                    
-                    service_request = ServiceRequest(
-                        user_id=current_user.id,
-                        service_id=service.id,
-                        professional_id=professional.id if professional else None,
-                        scheduled_date=datetime.strptime(
-                            f"{data['service_date']} {data['service_time']}", 
-                            '%Y-%m-%d %H:%M:%S'
-                        ),
-                        status='confirmed',
-                        location_pin=Address.query.get(data['address_id']).pincode,
-                        total_amount=service.base_price * cart_item.quantity
-                    )
-                    db.session.add(service_request)
-                    service_requests.append(service_request)
-                    total_amount += service.base_price * cart_item.quantity
-
-            # Create payment
-            payment = Payment(
-                service_request_id=service_requests[0].id,
-                payment_method_id=data.get('payment_method_id'),
-                amount=total_amount,
-                status='success',
-                transaction_id=str(uuid.uuid4())
-            )
-            db.session.add(payment)
-
-            # Clear cart only if not buy-now
-            if 'service_id' not in data:
-                for cart_item, _ in (cart_items if cart_items else []):
-                    db.session.delete(cart_item)
-
-            db.session.commit()
-            return jsonify({'success': True, 'orderId': service_requests[0].id})
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
 @app.route('/api/orders/<int:order_id>', methods=['GET'])
 @login_required
 def get_order_details(order_id):
@@ -1181,3 +1073,48 @@ def get_order_details(order_id):
         } for item in items],
         'total': total
     })
+
+@app.route('/api/service-requests', methods=['POST'])
+@login_required
+def create_service_request():
+    data = request.json
+    try:
+        # Get common data
+        address = Address.query.get(data['addressId'])
+        scheduled_date = datetime.fromisoformat(data['scheduledDate'])
+        
+        # Get order items
+        if data['orderType'] == 'cart':
+            items = UserServiceAction.query.filter_by(
+                user_id=current_user.id,
+                action_type='cart'
+            ).all()
+        else:
+            items = UserServiceAction.query.filter_by(
+                user_id=current_user.id,
+                action_type='buy_now'
+            ).all()
+
+        # Create service requests
+        service_requests = []
+        for item in items:
+            sr = ServiceRequest(
+                service_id=item.service_id,
+                user_id=current_user.id,
+                scheduled_date=scheduled_date,
+                location_pin=address.pincode,
+                total_amount=item.service.base_price * item.quantity,
+                status='pending'
+            )
+            db.session.add(sr)
+            service_requests.append(sr.id)
+            
+            # Mark cart items as inactive
+            item.is_active = False
+
+        db.session.commit()
+        return jsonify({'message': 'Order created', 'requests': service_requests}), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': str(e)}), 500

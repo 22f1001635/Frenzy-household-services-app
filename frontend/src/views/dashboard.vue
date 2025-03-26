@@ -64,6 +64,7 @@ const closeServiceDetails = () => {
 
 const handleServiceAction = async (actionType, event) => {
   try {
+    
     const response = await axios.post('/api/service-actions', {
       service_id: selectedService.value.id,
       action_type: actionType,
@@ -71,7 +72,14 @@ const handleServiceAction = async (actionType, event) => {
     })
     
     if (actionType === 'buy_now') {
-      router.push('/address')
+      router.push({
+        path: '/address',
+        query: { 
+          serviceId: selectedService.value.id,
+          quantity: quantity.value,
+          source: 'buy_now'
+        }
+      });
     } else {
       const message = actionType === 'cart' && response.data.new_quantity 
         ? `Quantity updated to ${response.data.new_quantity}`

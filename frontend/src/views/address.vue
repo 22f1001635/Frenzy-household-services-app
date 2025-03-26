@@ -4,18 +4,18 @@ import "@/assets/styles/cart.css"
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const store = useStore();
 const router = useRouter();
+const route = useRoute();
 const savedAddresses = ref([]);
 const showNewAddress = ref(false);
 const selectedAddressId = ref(null);
 const selectedDate = ref('');
 const selectedTime = ref('');
-const timeSlots = ref([
-  '9:00 AM', '11:00 AM', '1:00 PM', '3:00 PM', '5:00 PM'
-]);
+const timeSlots = ref(['9:00 AM', '11:00 AM', '1:00 PM', '3:00 PM', '5:00 PM']);
+const isCartFlow = computed(() => route.query.source === 'cart');
 
 const formData = ref({
     address_line1: '',
@@ -123,13 +123,14 @@ const proceedToPayment = () => {
     }
     
     if (!isValidDate.value) {
-        alert('Please select a time slot at least 2 hours from now if not available pick next day');
+        alert('Please select a time slot at least 2 hours from now');
         return;
     }
     
     router.push({
         path: '/payment',
         query: {
+            ...route.query,
             addressId: selectedAddressId.value,
             serviceDate: selectedDate.value,
             serviceTime: selectedTime.value

@@ -30,26 +30,6 @@ class User(db.Model, UserMixin):
             return False, "Password must be at least 8 characters long"
         return True, ""
 
-class PaymentMethod(db.Model):
-    """Payment Method model for storing user payment information"""
-    __tablename__ = 'payment_methods'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    method_type = db.Column(db.String(20), nullable=False)
-    is_default = db.Column(db.Boolean, default=False)
-    is_active = db.Column(db.Boolean, default=True)
-    
-    # For Credit Cards
-    card_number = db.Column(db.String(16),nullable=True)
-    card_cvv = db.Column(db.String(4),nullable=True)
-    card_expiry = db.Column(db.String(7),nullable=True)
-    
-    # For UPI
-    upi_id = db.Column(db.String(20),nullable=True)
-
-    # Relationships
-    payments = db.relationship('Payment', backref='payment_method', lazy=True)
 
 class Professional(User):
     """Service Professional model inheriting from User"""
@@ -161,7 +141,7 @@ class ServiceRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     service_id = db.Column(db.Integer, db.ForeignKey('services.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    professional_id = db.Column(db.Integer, db.ForeignKey('professionals.id'))
+    professional_id = db.Column(db.Integer, db.ForeignKey('professionals.id'),nullable=True)
     request_date = db.Column(db.DateTime, default=datetime.utcnow)
     order_group_id = db.Column(db.String(36))
     scheduled_date = db.Column(db.DateTime, nullable=False)
@@ -174,7 +154,6 @@ class ServiceRequest(db.Model):
     # Relationships
     reviews = db.relationship('Review', backref='service_request', lazy=True)
     notifications = db.relationship('Notification', backref='service_request', lazy=True)
-    payment = db.relationship('Payment', backref='service_request', uselist=False)
 
 class Review(db.Model):
     """Review model for storing user reviews and ratings"""
@@ -187,18 +166,6 @@ class Review(db.Model):
     rating = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.Text)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
-
-class Payment(db.Model):
-    """Payment model for handling transactions"""
-    __tablename__ = 'payments'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    service_request_id = db.Column(db.Integer, db.ForeignKey('service_requests.id'), nullable=False)
-    payment_method_id = db.Column(db.Integer, db.ForeignKey('payment_methods.id'), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
-    transaction_id = db.Column(db.String(100), unique=True)
-    status = db.Column(db.String(20), default='pending')  # pending/success/failed
-    payment_date = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Notification(db.Model):
     """Notification model for reminders and alerts"""

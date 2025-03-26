@@ -12,16 +12,31 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 
 const formatTimeTo24Hour = (timeStr) => {
-  const [time, modifier] = timeStr.split(' ')
-  let [hours, minutes] = time.split(':')
-  
-  if (modifier === 'PM' && hours !== '12') {
-    hours = parseInt(hours, 10) + 12
-  } else if (modifier === 'AM' && hours === '12') {
-    hours = '00'
+  // Handle cases where time might be undefined or empty
+  if (!timeStr) {
+    console.error('Time string is undefined or empty')
+    return '00:00:00'
   }
-  
-  return `${hours}:${minutes}:00`
+
+  try {
+    const [time, modifier] = timeStr.split(' ')
+    let [hours, minutes] = time.split(':')
+    
+    // Convert to string with leading zero if needed
+    hours = String(hours)
+    
+    if (modifier === 'PM' && hours !== '12') {
+      hours = String(parseInt(hours, 10) + 12)
+    } else if (modifier === 'AM' && hours === '12') {
+      hours = '00'
+    }
+    
+    // Pad hours and ensure minutes are present
+    return `${hours.padStart(2, '0')}:${minutes || '00'}:00`
+  } catch (error) {
+    console.error('Error formatting time:', error)
+    return '00:00:00'
+  }
 }
 
 const completeOrder = async () => {
@@ -29,28 +44,49 @@ const completeOrder = async () => {
   errorMessage.value = ''
   
   try {
-    const formattedTime = formatTimeTo24Hour(route.query.serviceTime)
-    const scheduledDateTime = `${route.query.serviceDate}T${formattedTime}`
+    // Safely handle potentially undefined route query values
+    const serviceDate = route.query.serviceDate || ''
+    const serviceTime = route.query.serviceTime || ''
+    const addressId = route.query.addressId
+    const source = route.query.source
+    const serviceId = route.query.serviceId
+    const quantity = route.query.quantity || 1
+
+    // Validate required fields
+    if (!addressId) {
+      throw new Error('Address ID is required')
+    }
+
+    // Format scheduled date and time
+    const formattedTime = formatTimeTo24Hour(serviceTime)
+    const scheduledDateTime = `${serviceDate}T${formattedTime}`
     
+    // Prepare debug information
     debugInfo.value = `Creating service request with:\n`
-    debugInfo.value += `- Address ID: ${route.query.addressId}\n`
+    debugInfo.value += `- Address ID: ${addressId}\n`
     debugInfo.value += `- Scheduled: ${scheduledDateTime}\n`
     
-    if (route.query.source === 'cart') {
-      debugInfo.value += '- Order type: Cart checkout\n'
-    } else {
-      debugInfo.value += `- Service ID: ${route.query.serviceId}\n`
-      debugInfo.value += `- Quantity: ${route.query.quantity}\n`
+    // Prepare request payload
+    const requestPayload = {
+      addressId: addressId,
+      scheduledDate: scheduledDateTime,
+      orderType: source === 'cart' ? 'cart' : 'buy_now'
+    }
+
+    // Add serviceId and quantity for buy now flow
+    if (source !== 'cart') {
+      // Explicitly check for serviceId
+      if (!serviceId) {
+        throw new Error('Service ID is required for buy now flow')
+      }
+      requestPayload.serviceId = serviceId
+      requestPayload.quantity = Number(quantity)
     }
 
     // Create service request
-    const response = await axios.post('/api/service-requests', {
-      addressId: route.query.addressId,
-      scheduledDate: scheduledDateTime,
-      orderType: route.query.source === 'cart' ? 'cart' : 'buy_now'
-    })
+    const response = await axios.post('/api/service-requests', requestPayload)
 
-    debugInfo.value += `\nService request created successfully!\n`
+    debugInfo.value += `\nService request(s) created successfully!\n`
     debugInfo.value += `Request IDs: ${response.data.requests.join(', ')}`
     
     // Redirect to confirmation page
@@ -58,17 +94,43 @@ const completeOrder = async () => {
       path: '/confirmorder',
       query: {
         status: 'success',
-        type: route.query.source === 'cart' ? 'cart' : 'service'
+        type: source === 'cart' ? 'cart' : 'service'
       }
     })
   } catch (error) {
     console.error('Order creation failed:', error)
-    errorMessage.value = error.response?.data?.message || 'Failed to create service request'
+    
+    // More detailed error handling
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      errorMessage.value = error.response.data.error || 'Failed to create service request'
+    } else if (error.request) {
+      // The request was made but no response was received
+      errorMessage.value = 'No response received from server'
+    } else {
+      // Something happened in setting up the request
+      errorMessage.value = error.message || 'Failed to create service request'
+    }
+    
     debugInfo.value += `\nError: ${errorMessage.value}`
   } finally {
     isLoading.value = false
   }
 }
+onMounted(() => {
+  console.log('Received query params:', route.query);
+
+  // Determine required parameters based on source
+  const requiredParams = route.query.source === 'cart' 
+    ? ['addressId', 'serviceDate', 'serviceTime', 'source']
+    : ['addressId', 'serviceDate', 'serviceTime', 'source', 'serviceId', 'quantity'];
+  
+  const missingParams = requiredParams.filter(param => !route.query[param]);
+  
+  if (missingParams.length > 0) {
+    errorMessage.value = `Missing required parameters: ${missingParams.join(', ')}`;
+  }
+});
 </script>
 
 <template>
@@ -92,7 +154,7 @@ const completeOrder = async () => {
               <button 
                 class="btn btn-success" 
                 @click="completeOrder"
-                :disabled="isLoading"
+                :disabled="isLoading || !!errorMessage"
               >
                 <span v-if="isLoading">
                   <i class="fas fa-spinner fa-spin"></i> Processing...

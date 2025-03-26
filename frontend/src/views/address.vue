@@ -127,14 +127,26 @@ const proceedToPayment = () => {
         return;
     }
     
+    // Prepare query parameters
+    const queryParams = {
+      serviceId: route.query.serviceId,
+      quantity: route.query.quantity,
+      source: route.query.source,
+      addressId: selectedAddressId.value,
+      serviceDate: selectedDate.value,
+      serviceTime: selectedTime.value
+    };
+    
+    // Explicitly include serviceId and quantity for buy now flow
+    if (isCartFlow.value === false) { // If source is 'buy_now'
+        console.log('Adding serviceId:', route.query.serviceId);
+        queryParams.serviceId = route.query.serviceId;
+        queryParams.quantity = route.query.quantity;
+    }
+    
     router.push({
         path: '/payment',
-        query: {
-            ...route.query,
-            addressId: selectedAddressId.value,
-            serviceDate: selectedDate.value,
-            serviceTime: selectedTime.value
-        }
+        query: queryParams
     });
 };
 </script>

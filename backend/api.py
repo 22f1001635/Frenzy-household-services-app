@@ -1047,20 +1047,21 @@ def get_order_details(order_id):
     if order.user_id != current_user.id and current_user.role != 'admin':
         return jsonify({'message': 'Unauthorized'}), 403
     
-    items = UserServiceAction.query.filter(
-        UserServiceAction.user_id == current_user.id,
-        UserServiceAction.action_type == 'cart',
-        UserServiceAction.is_active == False
+    # Get all service requests for this order (if grouped) or just this one
+    items = ServiceRequest.query.filter(
+        ServiceRequest.user_id == current_user.id,
+        ServiceRequest.id == order_id  
     ).join(Service).all()
     
-    total = sum(item.service.base_price * item.quantity for item in items)
+    # Calculate total correctly with quantity
+    total = sum(item.total_amount for item in items)
     
     return jsonify({
         'order': {
             'id': order.id,
             'status': order.status,
             'scheduled_date': order.scheduled_date.isoformat(),
-            'total_amount': order.total_amount
+            'total_amount': total
         },
         'items': [{
             'id': item.id,
@@ -1069,7 +1070,8 @@ def get_order_details(order_id):
                 'id': item.service.id,
                 'name': item.service.name,
                 'base_price': item.service.base_price
-            }
+            },
+            'item_total': item.total_amount
         } for item in items],
         'total': total
     })
@@ -1077,44 +1079,120 @@ def get_order_details(order_id):
 @app.route('/api/service-requests', methods=['POST'])
 @login_required
 def create_service_request():
-    data = request.json
+    """Handle creation of service requests from both cart and buy-now flows"""
     try:
-        # Get common data
-        address = Address.query.get(data['addressId'])
-        scheduled_date = datetime.fromisoformat(data['scheduledDate'])
-        
-        # Get order items
-        if data['orderType'] == 'cart':
-            items = UserServiceAction.query.filter_by(
-                user_id=current_user.id,
-                action_type='cart'
-            ).all()
-        else:
-            items = UserServiceAction.query.filter_by(
-                user_id=current_user.id,
-                action_type='buy_now'
-            ).all()
+        # 1. Validate and parse input
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
 
-        # Create service requests
-        service_requests = []
-        for item in items:
-            sr = ServiceRequest(
-                service_id=item.service_id,
+        required_fields = ['addressId', 'scheduledDate', 'orderType']
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        # 2. Fetch address and parse datetime
+        address = Address.query.get(data['addressId'])
+        if not address:
+            return jsonify({'error': 'Address not found'}), 404
+
+        try:
+            scheduled_date = datetime.fromisoformat(data['scheduledDate'])
+        except ValueError:
+            return jsonify({'error': 'Invalid date format'}), 400
+
+        # 3. Prepare items based on order type
+        items = []
+        if data['orderType'] == 'cart':
+            # Cart flow - get all active cart items
+            cart_items = UserServiceAction.query.filter_by(
                 user_id=current_user.id,
+                action_type='cart',
+                is_active=True
+            ).join(Service).all()
+
+            for item in cart_items:
+                items.append({
+                    'service_id': item.service_id,
+                    'quantity': item.quantity or 1  # Default to 1 if quantity is None
+                })
+        else:
+            # Buy now flow - single item
+            serviceId = data.get('serviceId')
+            if not serviceId:
+                return jsonify({'error': 'serviceId required for buy_now'}), 400
+
+            quantity = data.get('quantity', 1)
+            items.append({
+                'service_id': serviceId,
+                'quantity': quantity
+            })
+
+        # 4. Create service requests
+        created_requests = []
+        for item in items:
+            # Get the service details
+            service = Service.query.get(item['service_id'])
+            if not service:
+                return jsonify({'error': f'Service {item["service_id"]} not found'}), 404
+
+            # Ensure base_price is a number and convert quantity to int
+            base_price = float(service.base_price or 0)
+            quantity = int(item['quantity'] or 1)
+
+            # Calculate total amount correctly
+            total_amount = base_price * quantity
+
+            # Create service request
+            service_request = ServiceRequest(
+                service_id=item['service_id'],
+                user_id=current_user.id,
+                professional_id=None,  # Will be assigned later
                 scheduled_date=scheduled_date,
                 location_pin=address.pincode,
-                total_amount=item.service.base_price * item.quantity,
+                total_amount=total_amount,
+                quantity=quantity,
                 status='pending'
             )
-            db.session.add(sr)
-            service_requests.append(sr.id)
-            
-            # Mark cart items as inactive
-            item.is_active = False
+            db.session.add(service_request)
+            created_requests.append(service_request.id)
+
+            # Deactivate cart items if this was a cart checkout
+            if data['orderType'] == 'cart':
+                cart_item = UserServiceAction.query.filter_by(
+                    user_id=current_user.id,
+                    service_id=item['service_id'],
+                    action_type='cart'
+                ).first()
+                if cart_item:
+                    cart_item.is_active = False
 
         db.session.commit()
-        return jsonify({'message': 'Order created', 'requests': service_requests}), 201
-        
+
+        return jsonify({
+            'message': 'Service requests created successfully',
+            'requests': created_requests
+        }), 201
+
     except Exception as e:
         db.session.rollback()
-        return jsonify({'message': str(e)}), 500
+        app.logger.error(f"Error creating service requests: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/service-actions/cart', methods=['GET'])
+@login_required
+def get_cart_items():
+    cart_items = UserServiceAction.query.filter_by(
+        user_id=current_user.id,
+        action_type='cart',
+        is_active=True
+    ).join(Service).all()
+
+    return jsonify([{
+        'id': item.id,
+        'quantity': item.quantity,
+        'service': {
+            'id': item.service.id,
+            'name': item.service.name,
+            'base_price': item.service.base_price
+        }
+    } for item in cart_items]), 200

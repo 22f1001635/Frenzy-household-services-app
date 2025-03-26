@@ -143,7 +143,7 @@ class ServiceRequest(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     professional_id = db.Column(db.Integer, db.ForeignKey('professionals.id'),nullable=True)
     request_date = db.Column(db.DateTime, default=datetime.utcnow)
-    order_group_id = db.Column(db.String(36))
+    quantity = db.Column(db.Integer, default=1)
     scheduled_date = db.Column(db.DateTime, nullable=False)
     completion_date = db.Column(db.DateTime)
     status = db.Column(db.String(20), default='requested')

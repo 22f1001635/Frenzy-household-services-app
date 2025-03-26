@@ -64,13 +64,12 @@ const closeServiceDetails = () => {
 
 const handleServiceAction = async (actionType, event) => {
   try {
-    
     const response = await axios.post('/api/service-actions', {
       service_id: selectedService.value.id,
       action_type: actionType,
-      quantity: quantity.value
-    })
-    
+      quantity: quantity.value,
+    });
+
     if (actionType === 'buy_now') {
       router.push({
         path: '/address',
@@ -83,25 +82,29 @@ const handleServiceAction = async (actionType, event) => {
     } else {
       const message = actionType === 'cart' && response.data.new_quantity 
         ? `Quantity updated to ${response.data.new_quantity}`
-        : `Service added to ${actionType.replace('_', ' ')}!`
-      
-      alert(message)
-      closeServiceDetails()
+        : `Service added to ${actionType.replace('_', ' ')}!`;
+      alert(message);
+      closeServiceDetails();
     }
   } catch (error) {
     if (error.response?.data?.error_type === 'duplicate') {
+      alert(error.response.data.message || 'This item is already in your cart/wishlist.');
       if (actionType === 'buy_now') {
-        // Redirect to payment if duplicate buy_now action
-        router.push('/address')
-      } else {
-        alert(error.response.data.message)
+        router.push({
+          path: '/address',
+          query: { 
+            serviceId: selectedService.value.id,
+            quantity: quantity.value,
+            source: 'buy_now'
+          }
+        });
       }
     } else {
-      console.error('Action failed:', error)
-      alert(error.response?.data?.message || 'Failed to perform action')
+      console.error('Action failed:', error);
+      alert(error.response?.data?.message || 'Failed to perform action');
     }
   }
-}
+};
 const registerContainerRef = (el, categoryId) => {
   if (el) {
     serviceContainers.value[categoryId] = el

@@ -1,10 +1,12 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router';
 import axios from 'axios'
 import "@/assets/styles/main.css"
 import "@/assets/styles/cart.css"
 
-const cartItems = ref([])
+const cartItems = ref([]);
+const router = useRouter();
 
 onMounted(async () => {
   try {
@@ -47,11 +49,17 @@ const totalCost = computed(() => {
 
 const proceedToCheckout = () => {
   if (cartItems.value.length === 0) {
-    alert('Your cart is empty')
-    return
+    alert('Your cart is empty');
+    return;
   }
-  window.location.href = '/address'
-}
+  
+  router.push({
+    path: '/address',
+    query: {
+      source: 'cart' 
+    }
+  });
+};
 </script>
 
 <template>

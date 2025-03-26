@@ -469,11 +469,16 @@ const handleReject = async (applicationId) => {
           <div v-if="store.state.user?.role === 'admin'">
             <p id="header-wishlist">Professional Applications</p>
             <div id="wishlist-container">
+              <div v-if="professionalApplications.length === 0" style="width: 75vw; margin-left: 30%;">
+                <p style="color: black; opacity: 0.70;">No pending professional applications</p>
+              </div>
               <div class="wishlist-items-wrapper d-flex gap-3">
+                <div class="pro-wrap" style="width: 52.5vw;">
                 <div v-for="app in professionalApplications" :key="app.id" class="application-card">
                   <div class="application-details">
                     <p><strong>Username:</strong> {{ app.username }}</p>
                     <p><strong>Experience:</strong> {{ app.experience }} years</p>
+                    <p><strong>Pincode:</strong> {{ app.pincode }}</p>
                     <p><strong>Service:</strong> {{ app.service_name }}</p>
                   </div>
                   <div class="d-flex gap-2 px-3">
@@ -487,6 +492,7 @@ const handleReject = async (applicationId) => {
                       <i class="fa-solid fa-xmark"></i>
                     </button>
                   </div>
+                </div>
                 </div>
               </div>
             </div>
@@ -595,6 +601,8 @@ const handleReject = async (applicationId) => {
 }
 
 .application-details {
+  color: black;
+  opacity: 0.75;
   flex-grow: 1;
   margin-right: 2rem;
 }

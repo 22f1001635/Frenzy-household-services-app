@@ -985,13 +985,14 @@ def get_pending_professionals():
         user = User.query.get(pro.id)
         service = Service.query.get(pro.service_type)
         document = ProfessionalDocument.query.filter_by(professional_id=pro.id).first()
-        
+        default_address = Address.query.filter_by(user_id=user.id,is_default=True).first()
         result.append({
             'id': pro.id,
             'username': user.username,
             'experience': pro.experience,
             'service_name': service.name if service else 'N/A',
             'document_url': document.document_url if document else None,
+            'pincode': default_address.pincode if default_address else 'N/A',
             'is_available': pro.is_available,  # Include availability status
             'rating': pro.rating,  # Include rating
             'document_verified': document.is_verified if document else False,

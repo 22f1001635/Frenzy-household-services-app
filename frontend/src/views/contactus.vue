@@ -51,6 +51,9 @@ import "@/assets/styles/main.css"
                 <div class="d-grid gap-2 col-6 mx-auto pt-2">
                   <button type="submit" class="btn btn-primary btn-block ">Submit & Connect</button>
                 </div>
+                <div class="d-grid gap-2 col-6 mx-auto pt-2">
+                  <button class="btn btn-primary btn-block ">Check Status</button>
+                </div>
               </div>
             </form>
           </div>

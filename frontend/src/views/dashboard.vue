@@ -4,6 +4,7 @@ import { useStore } from 'vuex'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import "@/assets/styles/dashboard.css"
+
 const router = useRouter()
 const store = useStore()
 const categories = ref([])
@@ -12,32 +13,40 @@ const selectedService = ref(null)
 const quantity = ref(1)
 const serviceContainers = ref({})
 const hasServices = ref(false)
+const professionalRequests = ref([])
 
 const isUser = computed(() => store.state.user?.role === 'user')
+const isProfessional = computed(() => store.state.user?.role === 'professional')
 
 onMounted(async () => {
-  if (!isUser.value) return
-
-  try {
-    const [categoriesRes, servicesRes] = await Promise.all([
-      axios.get('/api/categories/active'),
-      axios.get('/api/services/active')
-    ])
-    
-    categories.value = categoriesRes.data
-    const allServices = servicesRes.data
-    
-    // Check if there are any services available
-    hasServices.value = allServices.length > 0
-    
-    categories.value.forEach(category => {
-      servicesByCategory.value[category.id] = allServices.filter(
-        service => service.category_id === category.id
-      )
-    })
-  } catch (error) {
-    console.error('Error fetching data:', error)
-    alert('Failed to load dashboard data')
+  if (isUser.value) {
+    try {
+      const [categoriesRes, servicesRes] = await Promise.all([
+        axios.get('/api/categories/active'),
+        axios.get('/api/services/active')
+      ])
+      
+      categories.value = categoriesRes.data
+      const allServices = servicesRes.data
+      
+      hasServices.value = allServices.length > 0
+      
+      categories.value.forEach(category => {
+        servicesByCategory.value[category.id] = allServices.filter(
+          service => service.category_id === category.id
+        )
+      })
+    } catch (error) {
+      console.error('Error fetching data:', error)
+      alert('Failed to load dashboard data')
+    }
+  } else if (isProfessional.value) {
+    try {
+      const response = await axios.get('/api/professional/service-requests')
+      professionalRequests.value = response.data
+    } catch (error) {
+      console.error('Error fetching requests:', error)
+    }
   }
 })
 
@@ -105,6 +114,18 @@ const handleServiceAction = async (actionType, event) => {
     }
   }
 };
+
+const handleRequestAction = async (requestId, action) => {
+  try {
+    await axios.patch(`/api/professional/service-requests/${requestId}`, { action })
+    professionalRequests.value = professionalRequests.value.filter(req => req.id !== requestId)
+    alert(`Request ${action}ed successfully`)
+  } catch (error) {
+    console.error('Error handling request:', error)
+    alert(error.response?.data?.message || 'Action failed')
+  }
+}
+
 const registerContainerRef = (el, categoryId) => {
   if (el) {
     serviceContainers.value[categoryId] = el
@@ -115,6 +136,7 @@ const registerContainerRef = (el, categoryId) => {
 <template>
 <body style="font-family: 'Poppins';">
   <main style="padding-top: 4.5%; padding-bottom: 3.5%; padding-left: 6.25%; padding-right: 8.75%;">
+    <!-- User Dashboard -->
     <div v-if="isUser" id="dashboard-container">
       <!-- No services message - global -->
       <div v-if="!hasServices" class="no-services-message">
@@ -222,10 +244,53 @@ const registerContainerRef = (el, categoryId) => {
       </div>
     </div>
 
+    <!-- Professional Dashboard -->
+    <div v-else-if="isProfessional" class="professional-dashboard">
+      <h2 class="dashboard-heading">Service Requests</h2>
+      
+      <div v-if="professionalRequests.length === 0" class="no-requests">
+        No pending service requests matching your service area
+      </div>
+
+      <table v-else class="requests-table">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Scheduled Date</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="req in professionalRequests" :key="req.id">
+            <td>{{ req.service_name }}</td>
+            <td>{{ new Date(req.scheduled_date).toLocaleString() }}</td>
+            <td>{{ req.quantity }}</td>
+            <td>₹{{ req.total_amount }}</td>
+            <td class="action-buttons">
+              <button 
+                class="accept-btn"
+                @click="handleRequestAction(req.id, 'accept')"
+              >
+                Accept
+              </button>
+              <button 
+                class="reject-btn"
+                @click="handleRequestAction(req.id, 'reject')"
+              >
+                Reject
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <!-- Non-user message -->
     <div v-else class="non-user-message">
       <h2>Access Restricted</h2>
-      <p>Please log in with a user account to access this dashboard.</p>
+      <p>Please log in with a user or professional account to access this dashboard.</p>
     </div>
   </main>
 </body>
@@ -247,5 +312,101 @@ const registerContainerRef = (el, categoryId) => {
   margin: 10px 0;
   font-style: italic;
   color: #666;
+}
+
+.professional-dashboard {
+  padding: 20px;
+}
+
+.dashboard-heading {
+  color: whitesmoke;
+  opacity: 0.8;
+  margin-bottom: 1.5rem;
+}
+
+.requests-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.requests-table th,
+.requests-table td {
+  padding: 15px 15px;
+  text-align: left;
+  color: rgba(0, 0, 0, 0.623);
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.requests-table th {
+  background-color: #f8f9fa;
+  color: black;
+  font-weight: 600;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.accept-btn {
+  background: #4CAF50;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.accept-btn:hover {
+  background: #3e8e41;
+}
+
+.reject-btn {
+  background: #f44336;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.reject-btn:hover {
+  background: #d32f2f;
+}
+
+.no-requests {
+  text-align: center;
+  padding: 20px;
+  color: #7f8c8d;
+  font-style: italic;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.non-user-message {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.non-user-message h2 {
+  color: #e74c3c;
+  margin-bottom: 15px;
+}
+
+.non-user-message p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
 }
 </style>

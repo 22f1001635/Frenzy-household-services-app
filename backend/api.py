@@ -1197,3 +1197,84 @@ def get_cart_items():
             'base_price': item.service.base_price
         }
     } for item in cart_items]), 200
+
+@app.route('/api/professional/service-requests', methods=['GET'])
+@login_required
+def get_professional_requests():
+    try:
+        if current_user.role != 'professional':
+            return jsonify({'message': 'Access denied'}), 403
+
+        # Get professional's service type
+        service_type = db.session.query(Professional.service_type).filter(
+            Professional.id == current_user.id
+        ).scalar()
+
+        # Get professional's default address pincode
+        address = Address.query.filter_by(
+            user_id=current_user.id, 
+            is_default=True
+        ).first()
+
+        if not service_type or not address:
+            return jsonify([]), 200
+
+        # Query matching service requests
+        requests = ServiceRequest.query.filter(
+            ServiceRequest.service_id == service_type,
+            ServiceRequest.location_pin == address.pincode,
+            ServiceRequest.status == 'pending',
+            ServiceRequest.professional_id.is_(None)
+        ).all()
+
+        response_data = []
+        for req in requests:
+            # Explicitly fetch user and address
+            user = User.query.get(req.user_id)
+            user_address = Address.query.filter_by(
+                user_id=user.id, 
+                is_default=True
+            ).first() if user else None
+
+            address_str = (
+                f"{user_address.address_line1}, {user_address.city}" 
+                if user_address else "Address not available"
+            )
+
+            response_data.append({
+                'id': req.id,
+                'service_name': Service.query.get(req.service_id).name,
+                'scheduled_date': req.scheduled_date.isoformat(),
+                'user_address': address_str,
+                'quantity': req.quantity,
+                'total_amount': req.total_amount
+            })
+
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        print(f"Error in get_professional_requests: {str(e)}")
+        return jsonify({'message': 'Internal server error'}), 500
+
+@app.route('/api/professional/service-requests/<int:request_id>', methods=['PATCH'])
+@login_required
+def handle_service_request(request_id):
+    if current_user.role != 'professional':
+        return jsonify({'message': 'Access denied'}), 403
+
+    req = ServiceRequest.query.get_or_404(request_id)
+    data = request.get_json()
+
+    if req.professional_id is not None:
+        return jsonify({'message': 'Request already handled'}), 400
+
+    if data.get('action') == 'accept':
+        req.professional_id = current_user.id
+        req.status = 'accepted'
+    elif data.get('action') == 'reject':
+        req.status = 'rejected'
+    else:
+        return jsonify({'message': 'Invalid action'}), 400
+
+    db.session.commit()
+    return jsonify({'message': f'Request {data["action"]}ed successfully'}), 200

@@ -2,36 +2,151 @@
 import { ref, onMounted, computed } from "vue";
 import { useStore } from 'vuex';
 import axios from 'axios';
+import "@/assets/styles/main.css"
+import "@/assets/styles/cart.css"
+import { useRouter } from 'vue-router';
 
 const store = useStore();
+const router = useRouter();
 
-import "@/assets/styles/main.css"
-import "@/assets/styles/statistics.css"
+// Profile Picture Upload
+const isUploading = ref(false);
+const profilePictureUrl = computed(() => store.getters.userImage);
 
-onMounted(() => {
-    window.dispatchEvent(new CustomEvent('vue-component-itemwrap'));
-    window.dispatchEvent(new CustomEvent('vue-component-search'));
-
-    // Fetch pending professional applications if the user is an admin
-    if (store.state.user?.role === 'admin') {
-        fetchPendingApplications();
-    }
-});
-
+// Password Change
 const currentPassword = ref('');
 const newPassword = ref('');
 const confirmPassword = ref('');
 
+// Professional Registration
+const servicesList = ref([]);
+const selectedServiceId = ref('');
+const experience = ref('');
+const phoneNumber = ref('');
+const addressLine1 = ref('');
+const addressLine2 = ref('');
+const city = ref('');
+const state = ref('');
+const pincode = ref('');
+const documentFile = ref(null);
+const documentError = ref('');
+
+// Admin Functionality
+const blockEmail = ref('');
+const professionalApplications = ref([]);
+const worstPerformers = ref([]);
+
+// Request Management
+const currentRequests = ref([]);
+const completedRequests = ref([]);
+const wishlistItems = ref([]);
+
+// Request Editing
+const editingRequestId = ref(null);
+const newDate = ref('');
+const newQuantity = ref(1);
+const timeSlots = ref(['9:00 AM', '11:00 AM', '1:00 PM', '3:00 PM', '5:00 PM']);
+const selectedTime = ref('');
+
+// Professional Status
+const professionalStatus = computed(() => {
+  const status = store.state.user?.verification_status || 'not_applied';
+  return status.charAt(0).toUpperCase() + status.slice(1);
+});
+
+onMounted(async () => {
+  window.dispatchEvent(new CustomEvent('vue-component-itemwrap'));
+  window.dispatchEvent(new CustomEvent('vue-component-search'));
+
+  // Fetch role-specific data
+  if (store.state.user?.role === 'admin') {
+    await fetchPendingApplications();
+    await fetchWorstPerformers();
+  } else if (store.state.user?.role === 'professional') {
+    await fetchProfessionalRequests();
+  } else if (store.state.user?.role === 'user') {
+    await fetchUserRequests();
+    await fetchWishlist();
+  }
+
+  // Fetch active services for professional registration
+  try {
+    const response = await fetch('/api/services/active');
+    if (response.ok) {
+      servicesList.value = await response.json();
+    }
+  } catch (error) {
+    console.error('Error fetching services:', error);
+  }
+});
+
+// ========== Profile Picture Handling ==========
+const handleImageClick = () => {
+  const requirements = `Profile Picture Requirements:
+- JPG/JPEG/PNG format
+- Max file size: 5MB
+- Square aspect ratio (1:1)`;
+  alert(requirements);
+  document.getElementById('profile-upload').click();
+};
+
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Validate file type
+  const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+  if (!validTypes.includes(file.type)) {
+    alert('Invalid file type. Please upload JPG, JPEG or PNG.');
+    return;
+  }
+
+  // Validate file size
+  if (file.size > 5 * 1024 * 1024) {
+    alert('File size exceeds 5MB limit.');
+    return;
+  }
+
+  // Validate aspect ratio
+  const img = new Image();
+  img.src = URL.createObjectURL(file);
+  img.onload = async () => {
+    if (img.width !== img.height) {
+      alert('Image must have 1:1 aspect ratio.');
+      return;
+    }
+
+    // Proceed with upload
+    isUploading.value = true;
+    const formData = new FormData();
+    formData.append('profile_picture', file);
+
+    try {
+      await axios.post('/api/upload-profile-picture', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true
+      });
+      await store.dispatch('fetchUser');
+      alert('Profile picture updated successfully!');
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Error updating profile picture. Please try again.');
+    } finally {
+      isUploading.value = false;
+      event.target.value = '';
+    }
+  };
+};
+
+// ========== Password Change ==========
 const handleChangePassword = async (event) => {
   event.preventDefault();
   
   try {
     const response = await fetch('/api/change-password', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Send cookies
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({
         current_password: currentPassword.value,
         new_password: newPassword.value,
@@ -56,99 +171,7 @@ const handleChangePassword = async (event) => {
   }
 };
 
-const isUploading = ref(false);
-const profilePictureUrl = computed(() => store.getters.userImage);
-
-const handleImageClick = () => {
-    const requirements = `Profile Picture Requirements:
-- JPG/JPEG/PNG format
-- Max file size: 5MB
-- Square aspect ratio (1:1)`;
-    alert(requirements);
-    document.getElementById('profile-upload').click();
-};
-
-const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-    if (!validTypes.includes(file.type)) {
-        alert('Invalid file type. Please upload JPG, JPEG or PNG.');
-        return;
-    }
-
-    // Validate file size
-    if (file.size > 5 * 1024 * 1024) {
-        alert('File size exceeds 5MB limit.');
-        return;
-    }
-
-    // Validate aspect ratio
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    img.onload = async () => {
-        if (img.width !== img.height) {
-            alert('Image must have 1:1 aspect ratio.');
-            return;
-        }
-
-        // Proceed with upload
-        isUploading.value = true;
-        const formData = new FormData();
-        formData.append('profile_picture', file);
-
-        try {
-            const response = await axios.post('/api/upload-profile-picture', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-                withCredentials: true
-            });
-
-            // Update user in store
-            await store.dispatch('fetchUser');
-            alert('Profile picture updated successfully!');
-        } catch (error) {
-            console.error('Upload error:', error);
-            alert('Error updating profile picture. Please try again.');
-        } finally {
-            isUploading.value = false;
-            event.target.value = ''; // Reset input
-        }
-    };
-};
-
-const servicesList = ref([]);
-const selectedServiceId = ref('');
-const experience = ref('');
-const phoneNumber = ref('');
-const addressLine1 = ref('');
-const addressLine2 = ref('');
-const city = ref('');
-const state = ref('');
-const pincode = ref('');
-const documentFile = ref(null);
-const documentError = ref('');
-
-// Fetch active services on component mount
-onMounted(async () => {
-  try {
-    const response = await fetch('/api/services/active');
-    if (!response.ok) {
-      throw new Error('Failed to fetch services');
-    }
-    const data = await response.json();
-    servicesList.value = data;
-    console.log('Services fetched:', data); 
-  } catch (error) {
-    console.error('Error fetching services:', error);
-    alert('Failed to load services. Please try again later.');
-  }
-});
-
-// File handling function
+// ========== Professional Registration ==========
 const handleFileChange = (event) => {
   const file = event.target.files[0];
   documentError.value = '';
@@ -167,7 +190,7 @@ const handleFileChange = (event) => {
   }
   
   // Validate file size (20MB)
-  const maxSize = 20 * 1024 * 1024; // 20MB in bytes
+  const maxSize = 20 * 1024 * 1024;
   if (file.size > maxSize) {
     documentError.value = 'File size exceeds 20MB limit';
     event.target.value = '';
@@ -181,25 +204,23 @@ const handleFileChange = (event) => {
 const handleProfessionalRegistration = async (event) => {
   event.preventDefault();
   
-  // Form validation - check all required fields
+  // Form validation
   if (!selectedServiceId.value || !experience.value || !phoneNumber.value || !pincode.value) {
     alert('Please fill all required fields');
     return;
   }
   
-  // Validate experience is a number
   if (isNaN(parseInt(experience.value))) {
     alert('Experience must be a valid number');
     return;
   }
-  
-  // Validate phone number has proper format
+
   if (phoneNumber.value.length < 10 || phoneNumber.value.length > 13) {
     alert('Please enter a valid phone number (10-13 digits)');
+    return;
   }
 
   try {
-    // Use FormData instead of JSON for file uploads
     const formData = new FormData();
     formData.append('service_id', selectedServiceId.value);
     formData.append('experience', experience.value);
@@ -210,12 +231,9 @@ const handleProfessionalRegistration = async (event) => {
     formData.append('state', state.value);
     formData.append('pincode', pincode.value);
     
-    // Append file if selected
     if (documentFile.value) {
       formData.append('document', documentFile.value);
     }
-    
-    console.log('Sending professional registration data with document');
     
     const response = await fetch('/api/register-professional', {
       method: 'POST',
@@ -227,10 +245,10 @@ const handleProfessionalRegistration = async (event) => {
     
     if (response.ok) {
       alert('Registration submitted! Awaiting verification.');
-      await store.dispatch('fetchUser'); // Refresh user data
+      await store.dispatch('fetchUser');
       document.getElementById('user-prof').style.display = 'none';
       
-      // Reset form fields
+      // Reset form
       selectedServiceId.value = '';
       experience.value = '';
       phoneNumber.value = '';
@@ -241,22 +259,81 @@ const handleProfessionalRegistration = async (event) => {
       pincode.value = '';
       documentFile.value = null;
       documentError.value = '';
-      
-      // Reset file input field
       document.getElementById('document').value = '';
     } else {
       alert(`Registration failed: ${data.message || 'Unknown error'}`);
-      console.error('Server response:', data);
       document.getElementById('document').value = '';
     }
   } catch (error) {
-    console.error('Error during professional registration:', error);
+    console.error('Registration error:', error);
     alert('Registration error. Please try again.');
   }
 };
 
-// Admin-specific functionality
-const blockEmail = ref('');
+// ========== Admin Functions ==========
+const fetchPendingApplications = async () => {
+  try {
+    const response = await fetch('/api/pending-professionals');
+    if (response.ok) {
+      professionalApplications.value = await response.json();
+    }
+  } catch (error) {
+    console.error('Error fetching applications:', error);
+    alert('Failed to load applications');
+  }
+};
+
+const fetchWorstPerformers = async () => {
+  try {
+    const response = await fetch('/api/professionals/worst-performing');
+    if (response.ok) {
+      worstPerformers.value = await response.json();
+    }
+  } catch (error) {
+    console.error('Error fetching performers:', error);
+  }
+};
+
+const handleViewDocument = (documentUrl) => {
+  window.open(`/documents/${documentUrl}`, '_blank');
+};
+
+const handleAccept = async (applicationId) => {
+  try {
+    const response = await fetch(`/api/update-professional-status/${applicationId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'verified' })
+    });
+    
+    if (response.ok) {
+      professionalApplications.value = professionalApplications.value.filter(app => app.id !== applicationId);
+      alert('Application approved');
+    }
+  } catch (error) {
+    console.error('Approval error:', error);
+    alert('Error approving application');
+  }
+};
+
+const handleReject = async (applicationId) => {
+  try {
+    const response = await fetch(`/api/update-professional-status/${applicationId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'rejected' })
+    });
+    
+    if (response.ok) {
+      professionalApplications.value = professionalApplications.value.filter(app => app.id !== applicationId);
+      alert('Application rejected');
+    }
+  } catch (error) {
+    console.error('Rejection error:', error);
+    alert('Error rejecting application');
+  }
+};
+
 const handleBlockUser = async (event) => {
   event.preventDefault();
   if (!blockEmail.value) return;
@@ -283,67 +360,192 @@ const handleBlockUser = async (event) => {
   }
 };
 
-// Professional status
-const professionalStatus = computed(() => {
-  const status = store.state.user?.verification_status || 'not_applied';
-  return status.charAt(0).toUpperCase() + status.slice(1);
-});
-
-// Professional Applications Management
-const professionalApplications = ref([]);
-
-// Fetch pending professional applications
-const fetchPendingApplications = async () => {
+// ========== Request Management ==========
+const fetchProfessionalRequests = async () => {
   try {
-    const response = await fetch('/api/pending-professionals');
-    if (!response.ok) throw new Error('Failed to fetch applications');
-    professionalApplications.value = await response.json();
+    const [currentRes, completedRes] = await Promise.all([
+      fetch('/api/professional/accepted-requests'),
+      fetch('/api/professional/completed-requests')
+    ]);
+    currentRequests.value = await currentRes.json();
+    completedRequests.value = await completedRes.json();
   } catch (error) {
-    console.error('Error fetching applications:', error);
-    alert('Failed to load applications');
+    console.error('Error fetching professional requests:', error);
   }
 };
 
-// Handle document viewing
-const handleViewDocument = (documentUrl) => {
-  window.open(`http://localhost:5000/documents/${documentUrl}`, '_blank');
-};
-
-// Handle application approval
-const handleAccept = async (applicationId) => {
+const fetchUserRequests = async () => {
   try {
-    const response = await fetch(`/api/update-professional-status/${applicationId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'verified' })
-    });
-    
-    if (response.ok) {
-      professionalApplications.value = professionalApplications.value.filter(app => app.id !== applicationId);
-      alert('Application approved');
-    }
+    const [currentRes, completedRes] = await Promise.all([
+      fetch('/api/user/current-requests'),
+      fetch('/api/user/completed-requests')
+    ]);
+    currentRequests.value = await currentRes.json();
+    completedRequests.value = await completedRes.json();
   } catch (error) {
-    console.error('Approval error:', error);
-    alert('Error approving application');
+    console.error('Error fetching user requests:', error);
   }
 };
 
-// Handle application rejection
-const handleReject = async (applicationId) => {
+const fetchWishlist = async () => {
   try {
-    const response = await fetch(`/api/update-professional-status/${applicationId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'rejected' })
-    });
-    
+    const response = await fetch('/api/service-actions/wishlist');
     if (response.ok) {
-      professionalApplications.value = professionalApplications.value.filter(app => app.id !== applicationId);
-      alert('Application rejected');
+      wishlistItems.value = await response.json();
     }
   } catch (error) {
-    console.error('Rejection error:', error);
-    alert('Error rejecting application');
+    console.error('Error fetching wishlist:', error);
+  }
+};
+
+const handleUnassign = async (requestId) => {
+  try {
+    const response = await fetch(`/api/service-requests/${requestId}/unassign`, {
+      method: 'PATCH'
+    });
+    if (response.ok) {
+      currentRequests.value = currentRequests.value.filter(req => req.id !== requestId);
+      alert('Request unassigned successfully');
+    }
+  } catch (error) {
+    console.error('Unassign error:', error);
+    alert('Error unassigning request');
+  }
+};
+
+const handleCancelRequest = async (requestId) => {
+  try {
+    const response = await fetch(`/api/service-requests/${requestId}/cancel`, {
+      method: 'PATCH'
+    });
+    if (response.ok) {
+      currentRequests.value = currentRequests.value.filter(req => req.id !== requestId);
+      alert('Request cancelled successfully');
+    }
+  } catch (error) {
+    console.error('Cancel error:', error);
+    alert('Error cancelling request');
+  }
+};
+
+const handleCompleteRequest = async (requestId) => {
+  const request = currentRequests.value.find(req => req.id === requestId);
+  if (!request) {
+    alert('Request not found.');
+    return;
+  }
+  if (!request.professional_id) {
+    alert('Cannot complete request without an assigned professional.');
+    return;
+  }
+  try {
+    const response = await fetch(`/api/service-requests/${requestId}/complete`, {
+      method: 'PATCH'
+    });
+    if (response.ok) {
+      router.push(`/review?request_id=${requestId}`);
+    }
+  } catch (error) {
+    console.error('Completion error:', error);
+    alert('Error completing request');
+  }
+};
+
+// ========== Request Editing ==========
+const openEditForm = (request) => {
+  editingRequestId.value = request.id;
+  const dateObj = new Date(request.scheduled_date);
+  
+  // Extract date and time
+  newDate.value = dateObj.toISOString().slice(0, 10);
+  selectedTime.value = dateObj.toLocaleTimeString('en-US', { 
+    hour: 'numeric', 
+    minute: '2-digit', 
+    hour12: true 
+  }).toUpperCase();
+  
+  newQuantity.value = request.quantity;
+};
+
+const cancelEdit = () => {
+  editingRequestId.value = null;
+};
+
+const convertTo24Hour = (timeStr) => {
+  const [time, modifier] = timeStr.split(' ');
+  let [hours, minutes] = time.split(':');
+  
+  if (modifier === 'PM') {
+    hours = hours === '12' ? '12' : String(parseInt(hours, 10) + 12);
+  } else if (modifier === 'AM' && hours === '12') {
+    hours = '00';
+  }
+  
+  return `${hours.padStart(2, '0')}:${minutes}:00`;
+};
+
+const saveRequestChanges = async (requestId) => {
+  try {
+    // Combine date and time
+    const combinedDateTime = `${newDate.value}T${convertTo24Hour(selectedTime.value)}`;
+    
+    const response = await fetch(`/api/service-requests/${requestId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        scheduled_date: combinedDateTime,
+        quantity: newQuantity.value
+      })
+    });
+
+    if (response.ok) {
+      const updatedRequest = await response.json();
+      const index = currentRequests.value.findIndex(req => req.id === requestId);
+      if (index !== -1) {
+        currentRequests.value.splice(index, 1, updatedRequest);
+      }
+      editingRequestId.value = null;
+      alert('Request updated successfully');
+    } else {
+      const errorData = await response.json();
+      alert(errorData.error || 'Failed to update request');
+    }
+  } catch (error) {
+    console.error('Error updating request:', error);
+    alert('Failed to update request');
+  }
+};
+
+const removeFromWishlist = async (itemId) => {
+  try {
+    await axios.delete(`/api/service-actions/${itemId}`, {
+      withCredentials: true
+    });
+    wishlistItems.value = wishlistItems.value.filter(item => item.id !== itemId);
+  } catch (error) {
+    console.error('Error removing item:', error);
+    alert('Failed to remove item');
+  }
+};
+
+const addToCart = async (serviceId) => {
+  try {
+    const response = await axios.post('/api/service-actions', {
+      service_id: serviceId,
+      action_type: 'cart',
+      quantity: 1
+    }, {
+      withCredentials: true
+    });
+    alert('Item moved to cart!');
+  } catch (error) {
+    if (error.response?.data?.error_type === 'duplicate') {
+      alert('This item is already in your cart');
+    } else {
+      console.error('Error moving to cart:', error);
+      alert(error.response?.data?.message || 'Failed to move to cart');
+    }
   }
 };
 </script>
@@ -380,7 +582,7 @@ const handleReject = async (applicationId) => {
         <!-- Role-based user-prof content -->
         <div id="user-prof" class="mt-3 pform" style="display: none;">
           <!-- Admin View -->
-          <div v-if="store.state.user?.role === 'admin'" style="padding-top: 9vw;">
+          <div v-if="store.state.user?.role === 'admin'" style="padding-top: 1vw;">
             <p style="padding-left: 2vw;">Revoke Account Access</p>
             <form @submit.prevent="handleBlockUser">
               <div class="mb-2">
@@ -392,6 +594,33 @@ const handleReject = async (applicationId) => {
                 <button type="button" class="btn btn-secondary" onclick="showForm('textarea')">Cancel</button>
               </div>
             </form>
+
+            <div class="mt-3">
+              <p class="fw-bold">Worst Performing Professionals</p>
+              <div v-if="worstPerformers.length > 0" class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Professional</th>
+                      <th>Service</th>
+                      <th>Rating</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="pro in worstPerformers" :key="pro.id">
+                      <td>{{ pro.username }}</td>
+                      <td>{{ pro.service_name }}</td>
+                      <td :class="{ 'text-danger': pro.rating < 3 }">
+                        {{ pro.rating.toFixed(1) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div v-else class="text-muted">
+                No performance data available
+              </div>
+            </div>
           </div>
 
           <!-- Professional View -->
@@ -498,45 +727,135 @@ const handleReject = async (applicationId) => {
             </div>
           </div>
 
-          <!-- User View -->
-          <div v-else>
-            <p id="header-wishlist">Active Orders</p>
-            <div id="wishlist-container">
-              <button id="prev-btn" class="nav-arrow" style="display: none;">
-                <i class="fa-solid fa-chevron-left"></i>
-              </button>
-              <div class="wishlist-items-wrapper d-flex gap-3">
-                <div id="wishlist-item">
-                  <div id="wishlist-item-image"></div>
-                  <p id="item-name">Saksham Sirohi Ji</p>
-                  <div class="d-flex gap-4 px-3">
-                    <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                    <button type="button" class="btn btn-danger"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
+          <div v-if="store.state.user?.role === 'professional'">
+            <p id="header-wishlist">Current Requests</p>
+            <div id="wishlist-container" class="d-flex flex-row overflow-auto gap-3">
+              <div v-if="currentRequests.length === 0" class="text-center w-100">
+                <p class="text-black text-opacity-70">No active service requests</p>
+              </div>
+              <div class="wishlist-items-wrapper d-flex">
+                <div class="pro-wrap d-flex gap-3">
+                  <div v-for="request in currentRequests" :key="request.id" class="application-card" style="min-width: 250px;">
+                    <div class="application-details">
+                      <p><strong>Service:</strong> {{ request.service_name }}</p>
+                      <p><strong>Scheduled:</strong> {{ new Date(request.scheduled_date).toLocaleDateString() }}</p>
+                      <p><strong>Address:</strong> {{ request.user_address }}</p>
+                    </div>
+                    <div class="d-flex gap-2 px-3">
+                      <button @click="handleUnassign(request.id)" class="btn btn-danger">
+                        <i class="fa-solid fa-xmark"></i> Cancel
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-              <button id="next-btn" class="nav-arrow">
-                <i class="fa-solid fa-chevron-right"></i>
-              </button>
             </div>
+
+            <p id="header-previous" style="padding-top: 0vw;">Completed Requests</p>
+            <div id="previous-container">
+              <div class="previous-items-wrapper d-flex gap-3 py-4 pt-1">
+                <div v-for="request in completedRequests" :key="request.id" class="application-card">
+                  <div class="application-details">
+                    <p><strong>Service:</strong> {{ request.service_name }}</p>
+                    <p><strong>Rating:</strong> {{ request.rating || 'Not rated' }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- User View -->
+          <div v-if="store.state.user?.role === 'user'">
+            <div v-if="currentRequests.length > 0">
+              <p id="header-wishlist">Current Requests</p>
+              <div id="wishlist-container" style="padding-bottom: 1vw;">
+                <div class="wishlist-items-wrapper d-flex gap-3">
+                  <div v-for="request in currentRequests" :key="request.id" class="application-card">
+                    <div class="application-details">
+                      <p><strong>Service:</strong> {{ request.service_name }}</p>
+                      <template v-if="editingRequestId === request.id">
+                        <div class="mb-2">
+                          <label class="form-label">New Date:</label>
+                          <input type="date" v-model="newDate" class="form-control">
+                        </div>
+                        <div class="row">
+                        <div class="mb-2 col-md-6">
+                          <label class="form-label">Time Slot:</label>
+                          <select v-model="selectedTime" class="form-control">
+                            <option v-for="slot in timeSlots" :key="slot" :value="slot">{{ slot }}</option>
+                          </select>
+                        </div>
+                        <div class="mb-2 col-md-6">
+                          <label class="form-label">Quantity:</label>
+                          <input type="number" v-model="newQuantity" min="1" class="form-control">
+                        </div>
+                      </div>
+                      </template>
+                      <template v-else>
+                        <p><strong>Scheduled:</strong> {{ new Date(request.scheduled_date).toLocaleString() }}</p>
+                        <p><strong>Quantity:</strong> {{ request.quantity }}</p>
+                      </template>
+                    </div>
+                    <div class="d-flex gap-2 px-3">
+                      <template v-if="editingRequestId === request.id">
+                        <button @click="saveRequestChanges(request.id)" class="btn btn-success btn-sm">
+                          <i class="fa-solid fa-check"></i> Save
+                        </button>
+                        <button @click="cancelEdit" class="btn btn-secondary btn-sm">
+                          <i class="fa-solid fa-times"></i> Cancel
+                        </button>
+                      </template>
+                      <template v-else>
+                        <button @click="openEditForm(request)" class="btn btn-info btn-sm">
+                          <i class="fa-solid fa-pen"></i> Edit
+                        </button>
+                        <button @click="handleCancelRequest(request.id)" class="btn btn-danger btn-sm">
+                          <i class="fa-solid fa-xmark"></i> Cancel
+                        </button>
+                        <button @click="handleCompleteRequest(request.id)" class="btn btn-success btn-sm">
+                          <i class="fa-solid fa-check"></i> Complete
+                        </button>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-else>
+              <p id="header-wishlist">From Your Wishlist</p>
+              <div id="wishlist-container">
+                <div class="wishlist-items-wrapper d-flex gap-3">
+                  <div v-for="item in wishlistItems" :key="item.id" id="wishlist-item">
+                    <div id="wishlist-item-image"><img :src="`http://localhost:5000/service_images/${item.service.image_file}`" style="width: 5.5vw; height: 5.5vw;"></div>
+                    <p id="item-name">{{ item.service.name }}</p>
+                    <div class="d-flex gap-4 px-3">
+                      <button type="button" class="btn btn-warning" @click="addToCart(item.service.id)"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
+                      <button type="button" class="btn btn-danger" @click="removeFromWishlist(item.id)"><i class="fa-duotone fa-solid fa-trash-can fa-lg"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <p id="header-previous" style="padding-top: 0vw;">Previously Ordered</p>
             <div id="previous-container">
-              <button id="prev-btn" class="nav-arrow" style="display: none;">
-                <i class="fa-solid fa-chevron-left"></i>
-              </button>
               <div class="previous-items-wrapper d-flex gap-3">
-                <div id="previous-item">
-                  <div id="previous-item-image"></div>
-                  <p id="item-name">Saksham Sirohi Ji</p>
-                  <div class="d-flex gap-4 px-3">
-                    <button type="button" class="btn btn-warning"><i class="fa-duotone fa-solid fa-cart-plus fa-lg"></i></button>
-                    <button type="button" class="btn btn-secondary"><i class="fa-duotone fa-solid fa-pencil fa-lg"></i></button>
+                <div v-for="request in completedRequests" :key="request.id" class="application-card">
+                  <div class="application-details">
+                    <p><strong>Service:</strong> {{ request.service_name }}</p>
+                    <p><strong>Rating:</strong> {{ request.rating || 'Not reviewed' }}</p>
+                  </div>
+                  <div class="d-flex gap-2 px-3">
+                    <button v-if="request.rating" @click="router.push(`/review?request_id=${request.id}`)" class="btn btn-secondary">
+                      <i class="fa-solid fa-pen"></i> Edit Review
+                    </button>
+                    <button v-else @click="router.push(`/review?request_id=${request.id}`)" class="btn btn-primary">
+                      <i class="fa-solid fa-star"></i> Add Review
+                    </button>
                   </div>
                 </div>
               </div>
-              <button id="next-btn" class="nav-arrow">
-                <i class="fa-solid fa-chevron-right"></i>
-              </button>
             </div>
           </div>
         </div>
@@ -567,7 +886,6 @@ const handleReject = async (applicationId) => {
         <p id="ori">{{ store.state.user?.role }}</p><hr>
         <div class="px-4 pt-2">
           <button v-if="store.state.user?.role === 'admin'" type="button" class="btn btn-sm btn-danger px-5" onclick="showForm('user-prof')">Block/Unblock Account</button>
-          <button v-else-if="store.state.user?.role === 'professional'" type="button" class="btn btn-sm btn-success" onclick="showForm('user-prof')">Professional Dashboard</button>
           <button v-else-if="store.state.user?.role === 'user'" type="button" class="btn btn-sm btn-warning" onclick="showForm('user-prof')"><p id="ori">Are you a service professional?</p></button></div>
       </div>
     </div>
@@ -594,7 +912,6 @@ const handleReject = async (applicationId) => {
   border-radius: 10px;
   padding: 1rem;
   margin: 1rem 0;
-  display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -609,5 +926,19 @@ const handleReject = async (applicationId) => {
 
 .application-details p {
   margin: 0.5rem 0;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+  font-weight: 500;
+}
+
+#previous-container{
+  height: unset;
 }
 </style>

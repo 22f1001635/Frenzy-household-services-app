@@ -150,8 +150,6 @@
     .wishlist-items-wrapper,.previous-items-wrapper {
         overflow-x: auto;
         scroll-behavior: smooth;
-        scrollbar-width: none; /* Firefox */
-        -ms-overflow-style: none; /* IE and Edge */
         padding: 0 1vw;
     }
 

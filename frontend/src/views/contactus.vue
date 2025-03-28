@@ -47,12 +47,12 @@ import "@/assets/styles/main.css"
                 <label for="exampleFormControlTextarea1">Message</label>
                 <textarea class="form-control" id="exampleFormControlTextarea1" rows="5" placeholder="Please provide necessary details as without them you will get a request termination and will need to re-request using right information in order to get any action"></textarea>
               </div>
-              <div class="form-group">
+              <div class="form-group d-flex gap-2">
                 <div class="d-grid gap-2 col-6 mx-auto pt-2">
                   <button type="submit" class="btn btn-primary btn-block ">Submit & Connect</button>
                 </div>
                 <div class="d-grid gap-2 col-6 mx-auto pt-2">
-                  <button class="btn btn-primary btn-block ">Check Status</button>
+                  <button class="btn btn-warning btn-block ">Check Status</button>
                 </div>
               </div>
             </form>

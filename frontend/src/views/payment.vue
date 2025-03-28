@@ -145,7 +145,7 @@ onMounted(() => {
       </div>
       <div id="box" class="bg-light text-dark" style="padding-bottom: 2vw;">
         <div class="cards">
-          <div class="saved">
+          <div class="saved" style="height: 14vw;">
             <p id="meth">Order Summary</p>
             <div class="card-items">
               <p>No payment required - demo mode</p>

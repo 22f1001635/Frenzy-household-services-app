@@ -607,7 +607,7 @@ def handle_service_action():
         service_id = data['service_id']
         quantity = data.get('quantity', 1)
 
-        # Handle cart special case (update quantity)
+        # For cart, update quantity if exists
         if action_type == 'cart':
             existing = UserServiceAction.query.filter_by(
                 user_id=current_user.id,
@@ -624,21 +624,17 @@ def handle_service_action():
                     'new_quantity': existing.quantity
                 }), 200
                 
-        # Handle other actions (wishlist/buy_now) with uniqueness check
-        else:
-            existing = UserServiceAction.query.filter_by(
+        # Handle buy_now - remove existing entry if exists
+        elif action_type == 'buy_now':
+            # Delete any existing buy_now entry for this service
+            UserServiceAction.query.filter_by(
                 user_id=current_user.id,
                 service_id=service_id,
-                action_type=action_type
-            ).first()
+                action_type='buy_now'
+            ).delete()
+            db.session.commit()
 
-            if existing:
-                return jsonify({
-                    'message': f'Item already in {action_type.replace("_", " ")}',
-                    'error_type': 'duplicate'
-                }), 409
-
-        # Create new entry if no existing
+        # Create new entry
         action = UserServiceAction(
             user_id=current_user.id,
             service_id=service_id,
@@ -647,7 +643,7 @@ def handle_service_action():
         )
         
         db.session.add(action)
-        db.session.commit()
+        db.session.commit()        
         return jsonify({'message': 'Action completed successfully'}), 200
 
     except Exception as e:
@@ -823,7 +819,6 @@ def get_service_actions(action_type):
     actions = UserServiceAction.query.filter_by(
         user_id=current_user.id,
         action_type=action_type,
-        is_active=True
     ).join(Service).all()
     
     return jsonify([{
@@ -867,18 +862,17 @@ def update_service_action(action_id):
             return jsonify({'message': 'No quantity provided'}), 400
 
     elif request.method == 'DELETE':
-        # Handle item removal
         try:
             db.session.delete(action)
             db.session.commit()
             return jsonify({
-                'message': 'Item removed from cart successfully',
+                'message': 'Item removed successfully',
                 'removed_item_id': action_id
             })
         except Exception as e:
             db.session.rollback()
             return jsonify({
-                'message': 'Failed to remove item from cart',
+                'message': 'Failed to remove item',
                 'error': str(e)
             }), 500
     
@@ -985,7 +979,8 @@ def get_pending_professionals():
         user = User.query.get(pro.id)
         service = Service.query.get(pro.service_type)
         document = ProfessionalDocument.query.filter_by(professional_id=pro.id).first()
-        default_address = Address.query.filter_by(user_id=user.id,is_default=True).first()
+        default_address = Address.query.filter_by(user_id=user.id, is_default=True).first()
+        
         result.append({
             'id': pro.id,
             'username': user.username,
@@ -993,11 +988,13 @@ def get_pending_professionals():
             'service_name': service.name if service else 'N/A',
             'document_url': document.document_url if document else None,
             'pincode': default_address.pincode if default_address else 'N/A',
-            'is_available': pro.is_available,  # Include availability status
-            'rating': pro.rating,  # Include rating
-            'document_verified': document.is_verified if document else False,
-            'verified_by': document.verified_by if document else None,
-            'verified_at': document.verified_at.isoformat() if document and document.verified_at else None
+            'user_address': (
+                f"{default_address.address_line1}, {default_address.city}, {default_address.state}"
+                if default_address else "Address not available"
+            ),
+            'is_available': pro.is_available,
+            'rating': pro.rating,
+            'document_verified': document.is_verified if document else False
         })
     
     return jsonify(result), 200
@@ -1104,31 +1101,43 @@ def create_service_request():
         # 3. Prepare items based on order type
         items = []
         if data['orderType'] == 'cart':
-            # Cart flow - get all active cart items
+            # Get all cart items
             cart_items = UserServiceAction.query.filter_by(
                 user_id=current_user.id,
-                action_type='cart',
-                is_active=True
+                action_type='cart'
             ).join(Service).all()
 
             for item in cart_items:
                 items.append({
                     'service_id': item.service_id,
-                    'quantity': item.quantity or 1  # Default to 1 if quantity is None
+                    'quantity': item.quantity or 1
                 })
+
+            # Delete all cart items
+            UserServiceAction.query.filter_by(
+                user_id=current_user.id,
+                action_type='cart'
+            ).delete()
         else:
             # Buy now flow - single item
-            serviceId = data.get('serviceId')
-            if not serviceId:
+            service_id = data.get('serviceId')
+            if not service_id:
                 return jsonify({'error': 'serviceId required for buy_now'}), 400
 
             quantity = data.get('quantity', 1)
             items.append({
-                'service_id': serviceId,
+                'service_id': service_id,
                 'quantity': quantity
             })
 
-        # 4. Create service requests
+            # Delete buy_now entry if exists
+            UserServiceAction.query.filter_by(
+                user_id=current_user.id,
+                action_type='buy_now',
+                service_id=service_id
+            ).delete()
+
+        # Create service requests
         created_requests = []
         for item in items:
             # Get the service details
@@ -1136,36 +1145,20 @@ def create_service_request():
             if not service:
                 return jsonify({'error': f'Service {item["service_id"]} not found'}), 404
 
-            # Ensure base_price is a number and convert quantity to int
-            base_price = float(service.base_price or 0)
-            quantity = int(item['quantity'] or 1)
+            total_amount = float(service.base_price or 0) * int(item['quantity'] or 1)
 
-            # Calculate total amount correctly
-            total_amount = base_price * quantity
-
-            # Create service request
             service_request = ServiceRequest(
                 service_id=item['service_id'],
                 user_id=current_user.id,
-                professional_id=None,  # Will be assigned later
+                professional_id=None,
                 scheduled_date=scheduled_date,
                 location_pin=address.pincode,
                 total_amount=total_amount,
-                quantity=quantity,
+                quantity=item['quantity'],
                 status='pending'
             )
             db.session.add(service_request)
             created_requests.append(service_request.id)
-
-            # Deactivate cart items if this was a cart checkout
-            if data['orderType'] == 'cart':
-                cart_item = UserServiceAction.query.filter_by(
-                    user_id=current_user.id,
-                    service_id=item['service_id'],
-                    action_type='cart'
-                ).first()
-                if cart_item:
-                    cart_item.is_active = False
 
         db.session.commit()
 
@@ -1176,7 +1169,6 @@ def create_service_request():
 
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Error creating service requests: {str(e)}")
         return jsonify({'error': str(e)}), 500
     
 @app.route('/api/service-actions/cart', methods=['GET'])
@@ -1184,8 +1176,7 @@ def create_service_request():
 def get_cart_items():
     cart_items = UserServiceAction.query.filter_by(
         user_id=current_user.id,
-        action_type='cart',
-        is_active=True
+        action_type='cart'
     ).join(Service).all()
 
     return jsonify([{
@@ -1194,7 +1185,8 @@ def get_cart_items():
         'service': {
             'id': item.service.id,
             'name': item.service.name,
-            'base_price': item.service.base_price
+            'base_price': item.service.base_price,
+            'image_file': item.service.image_file
         }
     } for item in cart_items]), 200
 
@@ -1269,6 +1261,23 @@ def handle_service_request(request_id):
         return jsonify({'message': 'Request already handled'}), 400
 
     if data.get('action') == 'accept':
+        # Check for existing bookings at this time
+        existing_booking = ServiceRequest.query.filter(
+            ServiceRequest.professional_id == current_user.id,
+            ServiceRequest.scheduled_date == req.scheduled_date,
+            ServiceRequest.status.in_(['accepted', 'pending'])
+        ).first()
+
+        if existing_booking:
+            return jsonify({
+                'message': 'You already have a booking scheduled at this time',
+                'conflicting_request': {
+                    'id': existing_booking.id,
+                    'service': existing_booking.service.name,
+                    'scheduled_date': existing_booking.scheduled_date.isoformat()
+                }
+            }), 409
+
         req.professional_id = current_user.id
         req.status = 'accepted'
     elif data.get('action') == 'reject':
@@ -1276,5 +1285,289 @@ def handle_service_request(request_id):
     else:
         return jsonify({'message': 'Invalid action'}), 400
 
+    try:
+        db.session.commit()
+        return jsonify({
+            'message': f'Request {data["action"]}ed successfully',
+            'request': {
+                'id': req.id,
+                'status': req.status,
+                'professional_id': req.professional_id,
+                'scheduled_date': req.scheduled_date.isoformat()
+            }
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'message': 'Error updating request',
+            'error': str(e)
+        }), 500
+
+def serialize_request(request):
+    """Serialize a ServiceRequest object to JSON"""
+    service = Service.query.get(request.service_id)
+    professional = Professional.query.get(request.professional_id) if request.professional_id else None
+    user = User.query.get(request.user_id) if request.user_id else None
+    
+    # Get review if exists
+    review = Review.query.filter_by(service_request_id=request.id).first()
+    
+    return {
+        'id': request.id,
+        'service_id': request.service_id,
+        'service_name': service.name if service else 'Service not available',
+        'user_id': request.user_id,
+        'professional_id': request.professional_id,
+        'professional_name': professional.username if professional else 'Not assigned',
+        'request_date': request.request_date.isoformat() if request.request_date else None,
+        'scheduled_date': request.scheduled_date.isoformat() if request.scheduled_date else None,
+        'completion_date': request.completion_date.isoformat() if request.completion_date else None,
+        'status': request.status,
+        'location_pin': request.location_pin,
+        'total_amount': request.total_amount,
+        'quantity': request.quantity,
+        'rating': review.rating if review else None,
+        'review_comment': review.comment if review else None
+    }
+
+# Add these new routes to your existing api.py
+@app.route('/api/professional/accepted-requests', methods=['GET'])
+@login_required
+def get_accepted_requests():
+    if current_user.role != 'professional':
+        return jsonify({'error': 'Access denied'}), 403
+    
+    requests = ServiceRequest.query.filter_by(
+        professional_id=current_user.id,
+        status='accepted'
+    ).all()
+    return jsonify([serialize_request(req) for req in requests])
+
+@app.route('/api/professional/completed-requests', methods=['GET'])
+@login_required
+def get_completed_pro_requests():
+    if current_user.role != 'professional':
+        return jsonify({'error': 'Access denied'}), 403
+    
+    requests = ServiceRequest.query.filter_by(
+        professional_id=current_user.id,
+        status='completed'
+    ).all()
+    return jsonify([serialize_request(req) for req in requests])
+
+@app.route('/api/user/current-requests', methods=['GET'])
+@login_required
+def get_user_requests():
+    if current_user.role != 'user':
+        return jsonify({'error': 'Access denied'}), 403
+    
+    requests = ServiceRequest.query.filter_by(
+        user_id=current_user.id
+    ).filter(ServiceRequest.status.in_(['pending', 'accepted'])).all()
+    return jsonify([serialize_request(req) for req in requests])
+
+@app.route('/api/user/completed-requests', methods=['GET'])
+@login_required
+def get_completed_user_requests():
+    if current_user.role != 'user':
+        return jsonify({'error': 'Access denied'}), 403
+    
+    requests = ServiceRequest.query.filter_by(
+        user_id=current_user.id,
+        status='completed'
+    ).all()
+    return jsonify([serialize_request(req) for req in requests])
+
+@app.route('/api/service-requests/<int:req_id>/unassign', methods=['PATCH'])
+@login_required
+def unassign_request(req_id):
+    req = ServiceRequest.query.get_or_404(req_id)
+    
+    if current_user.role != 'professional' or req.professional_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    req.professional_id = None
+    req.status = 'pending'
     db.session.commit()
-    return jsonify({'message': f'Request {data["action"]}ed successfully'}), 200
+    return jsonify({'message': 'Request unassigned'})
+
+@app.route('/api/service-requests/<int:req_id>/cancel', methods=['PATCH'])
+@login_required
+def cancel_request(req_id):
+    req = ServiceRequest.query.get_or_404(req_id)
+    
+    if current_user.role != 'user' or req.user_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    req.status = 'cancelled'
+    db.session.commit()
+    return jsonify({'message': 'Request cancelled'})
+
+@app.route('/api/service-requests/<int:req_id>/complete', methods=['PATCH'])
+@login_required
+def complete_request(req_id):
+    req = ServiceRequest.query.get_or_404(req_id)
+    
+    if current_user.role != 'user' or req.user_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    req.status = 'completed'
+    req.completion_date = datetime.utcnow()
+    db.session.commit()
+    return jsonify({'message': 'Request marked as completed'})
+
+@app.route('/api/reviews', methods=['GET', 'POST'])
+@login_required
+def handle_reviews():
+    if request.method == 'GET':
+        request_id = request.args.get('request_id')
+        if not request_id:
+            return jsonify({'error': 'request_id parameter is required'}), 400
+        
+        review = Review.query.filter_by(service_request_id=request_id).first()
+        if not review:
+            return jsonify({}), 404
+        
+        return jsonify({
+            'id': review.id,
+            'rating': review.rating,
+            'comment': review.comment,
+            'date_created': review.date_created.isoformat()
+        })
+
+    elif request.method == 'POST':
+        data = request.json
+        request_id = data.get('request_id')
+        
+        if not request_id:
+            return jsonify({'error': 'request_id is required'}), 400
+        
+        # Get professional_id from service request
+        service_request = ServiceRequest.query.get(request_id)
+        if not service_request:
+            return jsonify({'error': 'Service request not found'}), 404
+            
+        existing = Review.query.filter_by(
+            service_request_id=request_id,
+            user_id=current_user.id
+        ).first()
+        
+        if existing:
+            return jsonify({'message': 'Review already exists'}), 400
+            
+        review = Review(
+            service_request_id=request_id,
+            professional_id=service_request.professional_id,
+            user_id=current_user.id,
+            rating=data['rating'],
+            comment=data.get('comment', '')
+        )
+        
+        try:
+            db.session.add(review)
+            db.session.commit()
+            update_professional_rating(review.professional_id)
+            return jsonify({'message': 'Review created'}), 201
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
+
+@app.route('/api/reviews/<int:review_id>', methods=['PUT'])
+@login_required
+def update_review(review_id):
+    review = Review.query.get(review_id)
+    
+    if not review or review.user_id != current_user.id:
+        return jsonify({'message': 'Unauthorized'}), 403
+            
+    data = request.json
+    review.rating = data['rating']
+    review.comment = data.get('comment', '')
+    
+    try:
+        db.session.commit()
+        update_professional_rating(review.professional_id)
+        return jsonify({'message': 'Review updated'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/service-requests/<int:req_id>', methods=['GET', 'PATCH'])
+@login_required
+def service_request(req_id):
+    req = ServiceRequest.query.get_or_404(req_id)
+    
+    if request.method == 'GET':
+        # Authorization check
+        if current_user.role not in ['admin', 'professional'] and req.user_id != current_user.id:
+            return jsonify({'error': 'Unauthorized'}), 403
+            
+        return jsonify(serialize_request(req))
+
+    elif request.method == 'PATCH':
+        # Authorization check
+        if current_user.role != 'admin' and req.user_id != current_user.id:
+            return jsonify({'error': 'Unauthorized'}), 403
+
+        data = request.get_json()
+        
+        # Update scheduled date
+        if 'scheduled_date' in data:
+            try:
+                req.scheduled_date = datetime.fromisoformat(data['scheduled_date'])
+            except ValueError:
+                return jsonify({'error': 'Invalid date format'}), 400
+        
+        # Update quantity and recalculate total
+        if 'quantity' in data:
+            req.quantity = int(data['quantity'])
+            service = Service.query.get(req.service_id)
+            if service:
+                req.total_amount = service.base_price * req.quantity
+
+        try:
+            db.session.commit()
+            return jsonify(serialize_request(req)), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
+
+def update_professional_rating(professional_id):
+    professional = Professional.query.get(professional_id)
+    if not professional:
+        return
+    
+    reviews = Review.query.filter_by(professional_id=professional_id).all()
+    if not reviews:
+        professional.rating = 3.0
+    else:
+        total = sum(review.rating for review in reviews)
+        professional.rating = round(total / len(reviews), 1)
+    
+    db.session.commit()
+
+@app.route('/api/professionals/worst-performing')
+@admin_required
+@login_required
+def get_worst_performers():
+    try:
+        performers = db.session.query(
+            User.username,
+            Professional.rating,
+            Service.name.label('service_name')
+        ).select_from(User
+        ).join(Professional, User.id == Professional.id
+        ).join(Service, Professional.service_type == Service.id
+        ).filter(User.role == 'professional'
+        ).distinct().order_by(Professional.rating.asc()
+        ).limit(5).all()
+
+        return jsonify([{
+            'username': pro.username,
+            'rating': float(pro.rating),
+            'service_name': pro.service_name
+        } for pro in performers]), 200
+
+    except Exception as e:
+        print(f"Error fetching worst performers: {str(e)}")
+        return jsonify({'error': 'Failed to fetch performance data'}), 500

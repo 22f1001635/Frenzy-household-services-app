@@ -155,6 +155,14 @@ class ServiceRequest(db.Model):
     reviews = db.relationship('Review', backref='service_request', lazy=True)
     notifications = db.relationship('Notification', backref='service_request', lazy=True)
 
+    __table_args__ = (
+        db.UniqueConstraint(
+            'professional_id', 
+            'scheduled_date',
+            name='unique_professional_scheduling'
+        ),
+    )
+
 class Review(db.Model):
     """Review model for storing user reviews and ratings"""
     __tablename__ = 'reviews'
@@ -189,8 +197,7 @@ class UserServiceAction(db.Model):
     action_type = db.Column(db.String(20), nullable=False)  # Values: 'cart', 'wishlist', 'buy_now'
     quantity = db.Column(db.Integer, default=1)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    is_active = db.Column(db.Boolean, default=True)
-
+    
     # Relationships
     user = db.relationship('User', backref='service_actions')
     service = db.relationship('Service', backref='user_actions')

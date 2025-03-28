@@ -114,59 +114,6 @@ document.addEventListener('DOMContentLoaded', function() {
       setupStarRating();
   });
 
-  // Scroll Arrows for Wishlist and Previous Items (from profile.vue)
-  function setupScrollArrows(containerClass) {
-    const container = document.querySelector(`.${containerClass}`);
-    if (!container) return;
-
-    const prevBtn = container.parentElement.querySelector('#prev-btn');
-    const nextBtn = container.parentElement.querySelector('#next-btn');
-    
-    if (!prevBtn || !nextBtn) return;
-
-    // Ensure buttons are always visible
-    prevBtn.style.display = 'block';
-    nextBtn.style.display = 'block';
-
-    function updateArrowVisibility() {
-        const isAtStart = container.scrollLeft === 0;
-        const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth;
-        
-        // Adjust opacity based on scroll position
-        prevBtn.style.opacity = isAtStart ? '0.33' : '1';
-        nextBtn.style.opacity = isAtEnd ? '0.33' : '1';
-    }
-    
-    // Initial check
-    updateArrowVisibility();
-    
-    // Scroll amount for each click (350px)
-    const scrollAmount = 350;
-    
-    // Add click handlers for navigation
-    nextBtn.addEventListener('click', () => {
-        container.scrollLeft += scrollAmount;
-        setTimeout(updateArrowVisibility, 100);
-    });
-    
-    prevBtn.addEventListener('click', () => {
-        container.scrollLeft -= scrollAmount;
-        setTimeout(updateArrowVisibility, 100);
-    });
-    
-    // Update arrow visibility on scroll
-    container.addEventListener('scroll', updateArrowVisibility);
-    
-    // Update arrow visibility on window resize
-    window.addEventListener('resize', updateArrowVisibility);
-}
-
-  // Setup arrows for both wishlist and previous items containers
-  window.addEventListener('vue-component-itemwrap', () => {
-      setupScrollArrows('wishlist-items-wrapper');
-      setupScrollArrows('previous-items-wrapper');
-  });
-
   // Search Functionality (from profile.vue)
   function setupSearchFunctionality() {
       const searchInput = document.getElementById('searchInput');

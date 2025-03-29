@@ -1308,6 +1308,17 @@ def serialize_request(request):
     service = Service.query.get(request.service_id)
     professional = Professional.query.get(request.professional_id) if request.professional_id else None
     user = User.query.get(request.user_id) if request.user_id else None
+    address = Address.query.filter_by(user_id=user.id, is_default=True).first() if user else None
+    if address:
+        address_parts = [
+            address.address_line1,
+            address.address_line2 if address.address_line2 else None,
+            f"{address.city}, {address.state}",
+            address.pincode
+        ]
+        full_address = ", ".join(filter(None, address_parts))
+    else:
+        full_address = "Address not available"
     
     # Get review if exists
     review = Review.query.filter_by(service_request_id=request.id).first()
@@ -1327,7 +1338,9 @@ def serialize_request(request):
         'total_amount': request.total_amount,
         'quantity': request.quantity,
         'rating': review.rating if review else None,
-        'review_comment': review.comment if review else None
+        'review_comment': review.comment if review else None,
+        'user_address': full_address,
+        'scheduled_date': request.scheduled_date.isoformat() if request.scheduled_date else None,
     }
 
 # Add these new routes to your existing api.py

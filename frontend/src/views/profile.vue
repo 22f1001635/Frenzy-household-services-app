@@ -735,14 +735,14 @@ const addToCart = async (serviceId) => {
               </div>
               <div class="wishlist-items-wrapper d-flex">
                 <div class="pro-wrap d-flex gap-3">
-                  <div v-for="request in currentRequests" :key="request.id" class="application-card" style="min-width: 250px;">
+                  <div v-for="request in currentRequests" :key="request.id" class="application-card" style="width: 25vw;">
                     <div class="application-details">
                       <p><strong>Service:</strong> {{ request.service_name }}</p>
                       <p><strong>Scheduled:</strong> {{ new Date(request.scheduled_date).toLocaleDateString() }}</p>
                       <p><strong>Address:</strong> {{ request.user_address }}</p>
                     </div>
-                    <div class="d-flex gap-2 px-3">
-                      <button @click="handleUnassign(request.id)" class="btn btn-danger">
+                    <div class="d-flex gap-2 px-3 py-1" style="margin-left: 7.5vw;">
+                      <button @click="handleUnassign(request.id)" class="btn btn-sm btn-danger">
                         <i class="fa-solid fa-xmark"></i> Cancel
                       </button>
                     </div>

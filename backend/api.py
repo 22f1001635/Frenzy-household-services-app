@@ -1571,3 +1571,9 @@ def get_worst_performers():
     except Exception as e:
         print(f"Error fetching worst performers: {str(e)}")
         return jsonify({'error': 'Failed to fetch performance data'}), 500
+    
+@app.route('/api/admin/service-requests', methods=['GET'])
+@admin_required
+def get_all_service_requests():
+    requests = ServiceRequest.query.all()
+    return jsonify([serialize_request(req) for req in requests])

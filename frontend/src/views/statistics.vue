@@ -97,13 +97,14 @@ const fetchData = async () => {
 
     if (role === 'admin') {
       const [allRequests] = await Promise.all([
-        fetch('/api/service-requests').then(r => r.json()) // CORRECT ENDPOINT
+        fetch('/api/admin/service-requests').then(r => r.json())
       ]);
       const completed = allRequests.filter(req => req.status === 'completed');
       
       // Get last 3 months data
       const months = Array.from({ length: 3 }, (_, i) => {
         const date = new Date();
+        date.setDate(1);
         date.setMonth(date.getMonth() - i);
         return date;
       }).reverse();
@@ -181,7 +182,28 @@ onMounted(() => {
             <canvas id="chartCanvas"></canvas>
         </div>
         <div id="graph2"></div>
-        <div id="graph3"></div>
+        <div id="graph3" class="admin-links p-4">
+          <template v-if="store.state.user?.role === 'admin'">
+          <h3 style="padding-bottom: 3vw; color: black;">Admin Quick Links</h3>
+          <div class="d-flex gap-3 px-5 mx-2">
+            <router-link to="/categorymanagement" class="btn btn-primary bom">
+              <i class="fas fa-tags"></i> Manage Categories
+            </router-link>
+            <router-link to="/service" class="btn btn-primary bom">
+              <i class="fas fa-plus-circle"></i> Add Service
+            </router-link>
+            <router-link to="/serviceedit" class="btn btn-primary bom">
+              <i class="fas fa-edit"></i> Edit Services
+            </router-link>
+          </div>
+        </template>
+        <template v-else>
+          <h3 style="padding-bottom: 3vw; color: black;">Functionality under progress</h3>
+          <div class="opacity-50 px-5 mx-2" style="color: black;">
+            This section is currently under development. Please check back later.
+          </div>
+        </template>
+      </div>
       </main>
     </body>
 </template>

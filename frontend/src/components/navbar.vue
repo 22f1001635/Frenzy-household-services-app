@@ -8,19 +8,29 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <router-link class="nav-link" :class="{ active: $route.path === '/' }" aria-current="page" to="/">Home</router-link>
+          <!-- Non-logged-in items -->
+          <li class="nav-item" v-if="!isLoggedIn">
+            <router-link class="nav-link" :class="{ active: $route.path === '/' }" to="/">Home</router-link>
           </li>
-          <li class="nav-item">
-            <router-link class="nav-link" :class="{ active: $route.path === '/dashboard' }" aria-current="page" to="/dashboard">Services</router-link>
-          </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="!isLoggedIn">
             <router-link class="nav-link" :class="{ active: $route.path === '/about' }" to="/about">About</router-link>
           </li>
+
+          <!-- Logged-in items -->
+          <li class="nav-item" v-if="isLoggedIn">
+            <router-link class="nav-link" :class="{ active: $route.path === '/dashboard' }" to="/dashboard">Services</router-link>
+          </li>
+          <li class="nav-item" v-if="isLoggedIn">
+            <router-link class="nav-link" :class="{ active: $route.path === '/statistics' }" to="/statistics">Statistics</router-link>
+          </li>
+
+          <!-- Common item -->
           <li class="nav-item">
             <router-link class="nav-link" :class="{ active: $route.path === '/contactus' }" to="/contactus">Contact Us</router-link>
           </li>
         </ul>
+
+        <!-- Search (logged-in only) -->
         <div class="find" v-if="isLoggedIn">
           <div class="search-container me-2">
             <input class="form-control" type="search" placeholder="Search" id="searchInput">
@@ -35,22 +45,34 @@
             </div>
           </div>
         </div>
+
+        <!-- Right section -->
         <div class="d-flex align-items-center">
-          <!-- Show cart only if user is logged in -->
-          <div id="shopping" style="padding-left: 1vw;" v-if="isLoggedIn">
+          <!-- Cart -->
+          <div id="shopping" class="ms-2" v-if="isLoggedIn">
             <router-link to="/cart"><i class="fa-solid fa-cart-shopping" draggable="false"></i></router-link>
           </div>
-          <!-- Authentication section -->
+
+          <!-- Notifications -->
+          <div class="notification-dropdown ms-2 position-relative" v-if="isLoggedIn">
+            <button class="btn btn-link text-dark" @click="toggleNotifications">
+              <i class="fa-solid fa-bell" style="color: aqua;"></i>
+            </button>
+            <div v-if="showNotifications" class="dropdown-menu show position-absolute end-0 mt-1">
+              <div class="dropdown-item small">No new notifications</div>
+            </div>
+          </div>
+
+          <!-- Auth section -->
           <div id="user" class="d-flex align-items-center">
-            <!-- User is logged in -->
             <div v-if="isLoggedIn" class="d-flex align-items-center">
               <router-link to="/profile" class="d-flex align-items-center text-decoration-none">
                 <img :src="userImage" alt="Profile" class="rounded-circle border border-3 border-light-subtle" style="width: 30px; height: 30px;">
                 <span class="d-none d-md-inline ms-1">{{ user?.username.split(' ')[0] }}</span>
               </router-link>
-              <div id="logout" style="padding-left: 1.25vw;"></div><button  @click="handleLogout" class="btn btn-outline-danger ms-2">Logout</button>
+              <button @click="handleLogout" class="btn btn-outline-danger ms-2">Logout</button>
             </div>
-            <!-- User is NOT logged in -->
+            
             <div v-else class="d-flex align-items-center">
               <router-link to="/signin" class="btn btn-outline-success me-2">SignIn</router-link>
               <router-link to="/signup" class="btn btn-primary">SignUp</router-link>
@@ -63,7 +85,7 @@
 </template>
 
 <script>
-
+import { ref } from 'vue';
 import { useStore } from 'vuex';
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -72,29 +94,41 @@ export default {
   setup() {
     const store = useStore();
     const router = useRouter();
-    
-    // Using the correct getter names from your store
+    const showNotifications = ref(false);
+
     const isLoggedIn = computed(() => store.getters.isAuthenticated);
     const user = computed(() => store.getters.currentUser);
     const userImage = computed(() => store.getters.userImage);
-    
-    // Fetch user data when component mounts
+
+    const toggleNotifications = () => {
+      showNotifications.value = !showNotifications.value;
+    };
+
     onMounted(() => {
       store.dispatch('fetchUser');
     });
-    
-    // Logout handler
+
     const handleLogout = async () => {
-      await store.dispatch('logout'); // Call the logout action
-      router.push('/'); // Redirect to home page
+      await store.dispatch('logout');
+      router.push('/');
     };
-    
+
     return {
       isLoggedIn,
       user,
       userImage,
-      handleLogout,
+      showNotifications,
+      toggleNotifications,
+      handleLogout
     };
   }
 };
 </script>
+
+<style scoped>
+.notification-dropdown .dropdown-menu {
+  max-height: 300px;
+  overflow-y: auto;
+  min-width: 250px;
+}
+</style>

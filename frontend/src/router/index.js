@@ -5,7 +5,6 @@ import about from '@/views/aboutus.vue';
 import cart from '@/views/cart.vue';
 import address from '@/views/address.vue';
 import confirmorder from '@/views/confirmorder.vue';
-import contactus from '@/views/contactus.vue';
 import dashboard from '@/views/dashboard.vue';
 import payment from '@/views/payment.vue';
 import profile from '@/views/profile.vue';
@@ -65,15 +64,6 @@ const routes = [
         description: 'View your order confirmation details',
         requiresAuth: true
       }
-  },
-  {
-    path: '/contactus',
-    name: 'contactus',
-    component: contactus,
-    meta: {
-      title: 'Contact Us - Frenzy',
-      description: 'You have reached the support/contact us page of Frenzy! Get your queries answered swiftly.'
-    }
   },
   {
     path: '/dashboard',
@@ -205,7 +195,7 @@ router.beforeEach(async (to) => {
   // Check if the user is blocked
   if (user?.is_blocked) {
     await store.dispatch('logout');
-    alert('Your account has been blocked. Please contact support.');
+    alert('Your account has been blocked.');
     return { path: '/' };
   }
 

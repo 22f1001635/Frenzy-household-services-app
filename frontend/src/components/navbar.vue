@@ -24,10 +24,6 @@
             <router-link class="nav-link" :class="{ active: $route.path === '/statistics' }" to="/statistics">Statistics</router-link>
           </li>
 
-          <!-- Common item -->
-          <li class="nav-item">
-            <router-link class="nav-link" :class="{ active: $route.path === '/contactus' }" to="/contactus">Contact Us</router-link>
-          </li>
         </ul>
 
         <!-- Search (logged-in only) -->
